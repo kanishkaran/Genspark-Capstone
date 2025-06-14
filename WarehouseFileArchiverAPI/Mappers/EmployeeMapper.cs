@@ -21,9 +21,8 @@ namespace WarehouseFileArchiverAPI.Mappers
             return newEmployee;
         }
 
-        public Employee MapEmployeeUpdateDtoToEmployee(EmployeeUpdateRequestDto employeeDto)
+        public Employee MapEmployeeUpdateDtoToEmployee(Employee employee,EmployeeUpdateRequestDto employeeDto)
         {
-            var employee = new Employee();
             employee.FirstName = employeeDto.FirstName;
             employee.LastName = employeeDto.LastName;
             employee.Email = employeeDto.Email;

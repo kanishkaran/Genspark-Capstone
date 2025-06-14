@@ -173,21 +173,21 @@ namespace WarehouseFileArchiverAPI.Services
             return employee;
         }
 
-        public async Task<Employee> UpdateEmployee(Guid id, EmployeeUpdateRequestDto employeeDto, string currUser)
+        public async Task<Employee> UpdateEmployee(Guid id, EmployeeUpdateRequestDto employeeDto, string currUser, string role)
         {
 
-            var employee = await _employeeRepository.GetByIdAsync(id);
+            var employee = await GetById(id);
             if (!employee.IsActive)
                 throw new EmployeeNotFoundException($"Employee with {employee.Email} is deleted / not active");
 
-            if (employee.Email != currUser)
+            if (employee.Email != currUser && !role.Equals("admin", StringComparison.CurrentCultureIgnoreCase))
                 throw new UnauthorizedAccessException($"Updating Details of {employee.Email} is not Authorised");
 
 
           
-            employee = _employeeMapper.MapEmployeeUpdateDtoToEmployee(employeeDto);
+            employee = _employeeMapper.MapEmployeeUpdateDtoToEmployee(employee, employeeDto);
 
-            var updatedEmployee = await _employeeRepository.UpdateAsync(employee.Id, employee);
+            var updatedEmployee = await _employeeRepository.UpdateAsync(id, employee);
 
             await _auditLogService.LogAsync(
                 "Employee",

@@ -82,7 +82,8 @@ namespace WarehouseFileArchiverAPI.Controllers
             try
             {
                 var user = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                var updated = await _employeeService.UpdateEmployee(id, employeeDto, user);
+                var role = User.FindFirstValue(ClaimTypes.Role);
+                var updated = await _employeeService.UpdateEmployee(id, employeeDto, user, role);
                 return Ok(ApiResponseDto<object>.SuccessReponse("Employee updated successfully", updated));
             }
             catch (Exception ex)

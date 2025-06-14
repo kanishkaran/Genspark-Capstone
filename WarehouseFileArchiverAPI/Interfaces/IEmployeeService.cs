@@ -14,7 +14,7 @@ namespace WarehouseFileArchiverAPI.Interfaces
         Task<Employee> GetById(Guid id);
         Task<Employee> RegisterEmployee(EmployeeAddRequestDto employee);
         Task<Employee> GetEmployeeByEmail(string email);
-        Task<Employee> UpdateEmployee(Guid id, EmployeeUpdateRequestDto employee, string currUser);
+        Task<Employee> UpdateEmployee(Guid id, EmployeeUpdateRequestDto employee, string currUser, string role);
         Task<string> DeleteEmployee(Guid id, string currUser);
     }
 }
