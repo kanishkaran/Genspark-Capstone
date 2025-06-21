@@ -88,7 +88,7 @@ namespace WarehouseFileArchiverAPI.Services
             var totalRecords = fileArchives.Count();
             if (totalRecords == 0)
                 throw new CollectionEmptyException("No FileArchive Matched");
-            
+
 
             var items = fileArchives
                 .Skip((searchDto.Page - 1) * searchDto.PageSize)
@@ -128,7 +128,7 @@ namespace WarehouseFileArchiverAPI.Services
                 Id = fileArchive.Id,
                 FileName = fileArchive.FileName,
                 UploadedById = fileArchive.UploadedById,
-                UploadedByName = employee.FirstName +" "+ employee.LastName ?? "",
+                UploadedByName = employee.FirstName + " " + employee.LastName ?? "",
                 CategoryId = fileArchive.CategoryId,
                 CategoryName = category.CategoryName ?? "",
                 Status = fileArchive.Status
@@ -165,13 +165,16 @@ namespace WarehouseFileArchiverAPI.Services
                     throw new Exception($"Role '{role}' does not exist.");
 
 
-                var roleCategoryAccesses = await _roleCategoryAccessRepository.GetAllAsync();
-                var categoryAccess = roleCategoryAccesses.FirstOrDefault(r =>
-                    r.RoleId == userRole.Id && r.CategoryId == category.Id);
+                if (userRole.RoleName != "Admin")
+                {
+                    var roleCategoryAccesses = await _roleCategoryAccessRepository.GetAllAsync();
+                    var categoryAccess = roleCategoryAccesses.FirstOrDefault(r =>
+                        r.RoleId == userRole.Id && r.CategoryId == category.Id);
 
-                if (categoryAccess == null || !categoryAccess.CanDownload)
-                    throw new AccessViolationException($"You do not have download permission for category '{category.CategoryName}'.");
+                    if (categoryAccess == null || !categoryAccess.CanDownload)
+                        throw new AccessViolationException($"You do not have download permission for category '{category.CategoryName}'.");
 
+                }
 
                 var filePath = Path.Combine(_env.ContentRootPath, $"Uploads/{category.CategoryName}", fileVersion.FilePath);
 
@@ -323,7 +326,7 @@ namespace WarehouseFileArchiverAPI.Services
             if (fileArchive == null || fileArchive.Status)
                 throw new FileArchiveNotFoundException($"FileArchive with id: {id} was not found or already deleted.");
 
-            fileArchive.Status = true; 
+            fileArchive.Status = true;
             await _fileArchiveRepository.UpdateAsync(id, fileArchive);
             await _auditLogService.LogAsync(
                 "File Archive",

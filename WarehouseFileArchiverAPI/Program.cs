@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Text;
 using AspNetCoreRateLimit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -195,7 +196,7 @@ app.UseSerilogRequestLogging(options =>
 {
     options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
     {
-        diagnosticContext.Set("UserId", httpContext.User?.Identity?.Name ?? "Anonymous");
+        diagnosticContext.Set("UserId", httpContext.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "Anonymous");
         diagnosticContext.Set("Endpoint", httpContext.GetEndpoint()?.DisplayName ?? "Unknown");
     };
     options.MessageTemplate = "Handled {RequestPath} {RequestMethod} for {UserId}";
