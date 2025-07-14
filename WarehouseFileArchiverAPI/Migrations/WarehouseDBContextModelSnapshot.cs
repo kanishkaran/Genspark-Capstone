@@ -154,6 +154,9 @@ namespace WarehouseFileArchiverAPI.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<bool>("CanSummarise")
+                        .HasColumnType("boolean");
+
                     b.Property<Guid>("CategoryId")
                         .HasColumnType("uuid");
 
@@ -195,9 +198,6 @@ namespace WarehouseFileArchiverAPI.Migrations
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("CreatedUsername")
-                        .HasColumnType("text");
-
                     b.Property<Guid>("FileArchiveId")
                         .HasColumnType("uuid");
 
@@ -212,7 +212,7 @@ namespace WarehouseFileArchiverAPI.Migrations
 
                     b.HasIndex("ContentTypeId");
 
-                    b.HasIndex("CreatedUsername");
+                    b.HasIndex("CreatedBy");
 
                     b.HasIndex("FileArchiveId");
 
@@ -390,18 +390,23 @@ namespace WarehouseFileArchiverAPI.Migrations
                     b.HasOne("WarehouseFileArchiverAPI.Models.MediaType", "ContentType")
                         .WithMany("FileVersions")
                         .HasForeignKey("ContentTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_FileVersion_MediaType");
 
-                    b.HasOne("WarehouseFileArchiverAPI.Models.User", "Created")
-                        .WithMany()
-                        .HasForeignKey("CreatedUsername");
+                    b.HasOne("WarehouseFileArchiverAPI.Models.Employee", "Created")
+                        .WithMany("fileVersions")
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_FileVersion_Employee");
 
                     b.HasOne("WarehouseFileArchiverAPI.Models.FileArchive", "FileArchive")
                         .WithMany("FileVersions")
                         .HasForeignKey("FileArchiveId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_FileVersion_Archive");
 
                     b.Navigation("ContentType");
 
@@ -471,6 +476,8 @@ namespace WarehouseFileArchiverAPI.Migrations
             modelBuilder.Entity("WarehouseFileArchiverAPI.Models.Employee", b =>
                 {
                     b.Navigation("FileArchives");
+
+                    b.Navigation("fileVersions");
                 });
 
             modelBuilder.Entity("WarehouseFileArchiverAPI.Models.FileArchive", b =>

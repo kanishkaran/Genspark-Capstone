@@ -50,7 +50,8 @@ namespace WarehouseFileArchiverAPI.Services
                 {
                     Username = currUser.Username,
                     Token = token,
-                    RefreshToken = refreshToken
+                    RefreshToken = refreshToken,
+                    Role = currUser.Role.RoleName
                 };
             }
             catch (Exception)
@@ -63,7 +64,7 @@ namespace WarehouseFileArchiverAPI.Services
         {
             var user = await _userRepository.GetByIdAsync(username);
             if (user == null || user.RefreshToken != refreshToken || user.RefreshTokenExpiry < DateTime.UtcNow || user.IsDeleted)
-                throw new Exception("Invalid or expired refresh token.");
+                throw new Exception("Invalid User or expired refresh token.");
 
             var newToken = await _tokenService.GenerateToken(user);
             var newRefreshToken = await _tokenService.GenerateRefreshToken(user);
@@ -76,7 +77,8 @@ namespace WarehouseFileArchiverAPI.Services
             {
                 Username = user.Username,
                 Token = newToken,
-                RefreshToken = newRefreshToken
+                RefreshToken = newRefreshToken,
+                Role = user.Role.RoleName
             };
         }
 

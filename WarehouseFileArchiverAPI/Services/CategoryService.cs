@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using DocumentFormat.OpenXml.Office2010.Excel;
 using WarehouseFileArchiverAPI.Exceptions;
 using WarehouseFileArchiverAPI.Interfaces;
 using WarehouseFileArchiverAPI.Mappers;
@@ -122,7 +123,7 @@ namespace WarehouseFileArchiverAPI.Services
             return category;
         }
 
-        public async Task<PaginationDto<Category>> SearchCategories(SearchQueryDto searchDto)
+        public async Task<PaginationDto<CategoryListDto>> SearchCategories(SearchQueryDto searchDto)
         {
             var categories = await _categoryRepository.GetAllAsync() ?? throw new CollectionEmptyException("No categories in the Database");
 
@@ -132,7 +133,7 @@ namespace WarehouseFileArchiverAPI.Services
             if (!string.IsNullOrWhiteSpace(searchDto.Search))
             {
                 var search = searchDto.Search.ToLower();
-                categories = categories.Where(c => c.CategoryName.ToLower().Contains(search));
+                categories = categories.Where(c => c.CategoryName.ToLower().Contains(search) || c.AccessLevel.Access.ToLower().Contains(search));
             }
 
             categories = searchDto.SortBy?.ToLower() switch
@@ -148,15 +149,27 @@ namespace WarehouseFileArchiverAPI.Services
             var items = categories
                 .Skip((searchDto.Page - 1) * searchDto.PageSize)
                 .Take(searchDto.PageSize)
+                .Select(MapCategoryListDto)
                 .ToList();
 
-            return new PaginationDto<Category>
+            return new PaginationDto<CategoryListDto>
             {
                 Data = items,
                 TotalRecords = totalRecords,
                 Page = searchDto.Page,
                 PageSize = searchDto.PageSize,
                 TotalPages = (int)Math.Ceiling(totalRecords / (double)searchDto.PageSize)
+            };
+        }
+
+        private CategoryListDto MapCategoryListDto(Category category)
+        {
+            return new CategoryListDto
+            {
+                Id = category.Id,
+                CategoryName = category.CategoryName,
+                Access = category.AccessLevel.Access,
+                IsDeleted = category.IsDeleted
             };
         }
 

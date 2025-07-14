@@ -18,6 +18,6 @@ namespace WarehouseFileArchiverAPI.Models
 
         public FileArchive? FileArchive { get; set; }
         public MediaType? ContentType { get; set; }
-        public User? Created { get; set; }
+        public Employee? Created { get; set; }
     }
 }

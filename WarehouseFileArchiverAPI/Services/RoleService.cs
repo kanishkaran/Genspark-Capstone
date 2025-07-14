@@ -26,7 +26,7 @@ namespace WarehouseFileArchiverAPI.Services
             _auditLogService = auditLogService;
         }
 
-        public async Task<PaginationDto<Role>> SearchRoles(SearchQueryDto searchDto)
+        public async Task<PaginationDto<RoleListDto>> SearchRoles(SearchQueryDto searchDto)
         {
             var roles = await _roleRepository.GetAllAsync() ?? throw new Exception("No roles in the Database");
 
@@ -37,7 +37,7 @@ namespace WarehouseFileArchiverAPI.Services
             if (!string.IsNullOrWhiteSpace(searchDto.Search))
             {
                 var search = searchDto.Search.ToLower();
-                roles = roles.Where(r => r.RoleName.ToLower().Contains(search));
+                roles = roles.Where(r => r.RoleName.ToLower().Contains(search) || r.AccessLevel.Access.ToLower().Contains(search));
             }
 
 
@@ -54,15 +54,27 @@ namespace WarehouseFileArchiverAPI.Services
             var items = roles
                 .Skip((searchDto.Page - 1) * searchDto.PageSize)
                 .Take(searchDto.PageSize)
+                .Select(MapRoleListDto)
                 .ToList();
 
-            return new PaginationDto<Role>
+            return new PaginationDto<RoleListDto>
             {
                 Data = items,
                 TotalRecords = totalRecords,
                 Page = searchDto.Page,
                 PageSize = searchDto.PageSize,
                 TotalPages = (int)Math.Ceiling(totalRecords / (double)searchDto.PageSize)
+            };
+        }
+
+        private RoleListDto MapRoleListDto(Role role)
+        {
+            return new RoleListDto
+            {
+                Id = role.Id,
+                RoleName = role.RoleName,
+                AccessLevel = role.AccessLevel.Access,
+                IsDeleted = role.IsDeleted
             };
         }
 

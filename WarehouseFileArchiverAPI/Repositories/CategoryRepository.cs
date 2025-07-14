@@ -17,7 +17,8 @@ namespace WarehouseFileArchiverAPI.Repositories
         }
         public override async Task<IEnumerable<Category>> GetAllAsync()
         {
-            var categories = await _context.Categories.ToListAsync();
+            var categories = await _context.Categories.Include(c => c.AccessLevel)
+                                        .ToListAsync();
             if (categories.Count == 0)
                 return new List<Category>();
             return categories;

@@ -17,7 +17,8 @@ namespace WarehouseFileArchiverAPI.Repositories
         }
         public override async Task<IEnumerable<Role>> GetAllAsync()
         {
-            var roles = await _context.Roles.ToListAsync();
+            var roles = await _context.Roles.Include(r => r.AccessLevel)
+                                            .ToListAsync();
             if (roles == null)
                 return new List<Role>();
             return roles.OrderBy(r => r.RoleName);

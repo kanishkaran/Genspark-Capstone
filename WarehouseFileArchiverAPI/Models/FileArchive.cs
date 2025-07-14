@@ -13,6 +13,8 @@ namespace WarehouseFileArchiverAPI.Models
         public bool Status { get; set; }
         public Category? Category { get; set; }
 
+        public bool CanSummarise { get; set; }
+
         public ICollection<FileVersion>? FileVersions { get; set; }
         public Employee? Employee { get; set; }
     }

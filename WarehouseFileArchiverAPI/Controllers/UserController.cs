@@ -24,7 +24,7 @@ namespace WarehouseFileArchiverAPI.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin")]
+        // [Authorize(Roles = "Admin")]
         public async Task<ActionResult<ApiResponseDto<object>>> SearchUsers([FromQuery] SearchQueryDto searchDto)
         {
             try

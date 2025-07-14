@@ -46,8 +46,17 @@ namespace WarehouseFileArchiverAPI.Services
                 {
                     throw new CollectionEmptyException("There are no employees in the database");
                 }
+                var user = await _userRepository.GetByIdAsync(email);
+                var employee = employees.FirstOrDefault(ep => ep.Email == email && ep.IsActive);
 
-                return employees.FirstOrDefault(ep => ep.Email == email && ep.IsActive) ?? throw new EmployeeNotFoundException($"Employee with email: {email} was not found or deleted");
+                if (employee == null && user == null) {
+                    throw new EmployeeNotFoundException($"Employee with email: {email} was not found or deleted");
+                }
+                else if (employee == null && user != null) {
+                    return new Employee();
+                }
+
+                return employee;
             }
             catch (Exception)
             {
@@ -119,7 +128,7 @@ namespace WarehouseFileArchiverAPI.Services
 
             var totalRecords = employees.Count();
             if (totalRecords == 0)
-                throw new CollectionEmptyException("No employees Matched ");
+                throw new CollectionEmptyException("No employees Matched");
 
             var items = employees
                 .Skip((searchDto.Page - 1) * searchDto.PageSize)

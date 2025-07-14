@@ -38,7 +38,7 @@ namespace WarehouseFileArchiverAPI.Services
             if (!string.IsNullOrWhiteSpace(searchDto.Search))
             {
                 var search = searchDto.Search.ToLower();
-                accessLevels = accessLevels.Where(a => a.Access != null && a.Access.ToLower().Contains(search));
+                accessLevels = accessLevels.Where(a => a.Access.ToLower().Contains(search));
             }
 
 

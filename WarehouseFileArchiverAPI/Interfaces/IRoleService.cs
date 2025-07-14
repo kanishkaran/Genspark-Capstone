@@ -9,7 +9,7 @@ namespace WarehouseFileArchiverAPI.Interfaces
 {
     public interface IRoleService
     {
-        Task<PaginationDto<Role>> SearchRoles(SearchQueryDto searchDto);
+        Task<PaginationDto<RoleListDto>> SearchRoles(SearchQueryDto searchDto);
         Task<Role> GetById(Guid id);
         Task<Role> AddRole(RoleAddRequestDto roleDto, string changedBy = "system");
         Task<Role> UpdateRole(Guid id, RoleAddRequestDto roleDto, string changedBy = "system");

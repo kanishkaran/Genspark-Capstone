@@ -1,4 +1,8 @@
-using System.Threading.Tasks;
+
+using Microsoft.EntityFrameworkCore.Migrations.Operations;
+using Microsoft.SemanticKernel.Connectors.PgVector;
+using Microsoft.SemanticKernel.Embeddings;
+using OllamaSharp;
 using WarehouseFileArchiverAPI.Exceptions;
 using WarehouseFileArchiverAPI.Interfaces;
 using WarehouseFileArchiverAPI.Mappers;
@@ -15,6 +19,9 @@ namespace WarehouseFileArchiverAPI.Services
         private readonly IEmployeeService _employeeService;
         private readonly IAuditLogService _auditLogService;
         private readonly FileArchiveMapper _mapper;
+        private readonly IFileTextExtractorService _textExtractor;
+        private readonly OllamaApiClient _ollamaClient;
+        private readonly PostgresCollection<string, FileEmbeddingRecord> _vectorCollection;
         private readonly IWebHostEnvironment _env;
         private readonly IRepository<Guid, FileArchive> _fileArchiveRepository;
         private readonly IRepository<Guid, FileVersion> _fileVersionRepository;
@@ -40,7 +47,8 @@ namespace WarehouseFileArchiverAPI.Services
                                   ICategoryService categoryService,
                                   IEmployeeService employeeService,
                                   IChecksumService checksumService,
-                                  IAuditLogService auditLogService)
+                                  IAuditLogService auditLogService,
+                                  IFileTextExtractorService fileTextExtractorService)
         {
             _env = environment;
             _fileArchiveRepository = fileArchiveRepository;
@@ -63,6 +71,10 @@ namespace WarehouseFileArchiverAPI.Services
 
             _mapper = new();
 
+            _textExtractor = fileTextExtractorService;
+            _ollamaClient = new OllamaApiClient(new Uri("http://localhost:11434"), "mxbai-embed-large");
+            _vectorCollection = new PostgresCollection<string, FileEmbeddingRecord>("User ID=postgres;Password=[]kanish;Host=localhost;Port=5432;Database=WarehouseArchiveDB;", "FileEmbeddings");
+
         }
 
         public async Task<PaginationDto<FileArchiveResponseDto>> SearchFileArchives(SearchQueryDto searchDto)
@@ -76,7 +88,7 @@ namespace WarehouseFileArchiverAPI.Services
             if (!string.IsNullOrWhiteSpace(searchDto.Search))
             {
                 var search = searchDto.Search.ToLower();
-                fileArchives = fileArchives.Where(fa => fa.FileName.ToLower().Contains(search));
+                fileArchives = fileArchives.Where(fa => fa.FileName.ToLower().Contains(search) || fa.Employee.FirstName.ToLower().Contains(search));
             }
 
             fileArchives = searchDto.SortBy?.ToLower() switch
@@ -101,7 +113,9 @@ namespace WarehouseFileArchiverAPI.Services
                     UploadedByName = fa.Employee?.FirstName ?? "",
                     CategoryId = fa.CategoryId,
                     CategoryName = fa.Category?.CategoryName ?? "",
-                    Status = fa.Status
+                    Status = fa.Status,
+                    CanSummarise = fa.CanSummarise
+
                 })
                 .ToList();
 
@@ -135,7 +149,7 @@ namespace WarehouseFileArchiverAPI.Services
             };
         }
 
-        public async Task<FileDownloadDto> DownloadFile(string fileName, int versionNumber, string role)
+        public async Task<FileDownloadDto> DownloadFile(string fileName, int versionNumber, string role, string currUser)
         {
             try
             {
@@ -156,24 +170,17 @@ namespace WarehouseFileArchiverAPI.Services
                 var category = await _categoryRepository.GetByIdAsync(fileArchive.CategoryId);
                 var accessLevel = await _accessLevelRepository.GetByIdAsync(category.AccessLevelId);
                 if (accessLevel.Access == "Admin" && role != "Admin")
-                    throw new UnauthorizedAccessException($"Cannot Download file from the Category {category.CategoryName}");
+                    throw new UnauthorizedAccessException($"Cannot Download file from the Category {category.CategoryName} It is a Admin only Category");
 
 
-                var roles = await _roleRepository.GetAllAsync();
-                var userRole = roles.FirstOrDefault(r => r.RoleName.Equals(role, StringComparison.OrdinalIgnoreCase));
+                var userRole = await GetRoleByName(role);
                 if (userRole == null)
                     throw new Exception($"Role '{role}' does not exist.");
 
 
                 if (userRole.RoleName != "Admin")
                 {
-                    var roleCategoryAccesses = await _roleCategoryAccessRepository.GetAllAsync();
-                    var categoryAccess = roleCategoryAccesses.FirstOrDefault(r =>
-                        r.RoleId == userRole.Id && r.CategoryId == category.Id);
-
-                    if (categoryAccess == null || !categoryAccess.CanDownload)
-                        throw new AccessViolationException($"You do not have download permission for category '{category.CategoryName}'.");
-
+                    await EnsureDownloadPermission(userRole.Id, category);
                 }
 
                 var filePath = Path.Combine(_env.ContentRootPath, $"Uploads/{category.CategoryName}", fileVersion.FilePath);
@@ -184,6 +191,14 @@ namespace WarehouseFileArchiverAPI.Services
                 var bytes = await File.ReadAllBytesAsync(filePath);
 
                 var mediaType = await _mediaTypeRepository.GetByIdAsync(fileVersion.ContentTypeId);
+
+                await _auditLogService.LogAsync(
+                "File Archive",
+                fileArchive.Id,
+                "Download",
+                currUser ?? "system",
+                $"File {fileName} was Downloaded."
+            );
 
                 return new FileDownloadDto
                 {
@@ -239,18 +254,80 @@ namespace WarehouseFileArchiverAPI.Services
 
             await _fileVersionRepository.AddAsync(version);
 
-            return "File Uploaded Successfully";
+            FileEmbeddingResultDto summaryResult = new();
+
+            if (mediaType.Extension == ".pdf" || mediaType.Extension == ".doc" || mediaType.Extension == ".docx")
+            {
+                summaryResult = await InsertToVectorDb(file);
+            }
+            if (summaryResult.CanSummarise)
+            {
+                fileArchive.CanSummarise = true;
+                await _fileArchiveRepository.UpdateAsync(fileArchive.Id, fileArchive);
+            }
+
+            await _auditLogService.LogAsync(
+                "File Archive",
+                fileArchive.Id,
+                "Upload",
+                userName ?? "system",
+                $"File {files?.File?.FileName} was uploaded."
+            );
+
+            return summaryResult.Message;
+        }
+
+        private async Task<FileEmbeddingResultDto> InsertToVectorDb(IFormFile file)
+        {
+            try
+            {
+                string contentText = await _textExtractor.ExtractTextAsync(file);
+                if (!string.IsNullOrWhiteSpace(contentText))
+                {
+                    var embedder = _ollamaClient.AsTextEmbeddingGenerationService();
+                    var embedding = await embedder.GenerateEmbeddingAsync(contentText);
+
+                    var embeddingRecord = new FileEmbeddingRecord
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        FileName = file.FileName,
+                        ContentType = file.ContentType,
+                        TextContent = contentText,
+                        Embedding = embedding
+                    };
+
+                    await _vectorCollection.EnsureCollectionExistsAsync();
+                    await _vectorCollection.UpsertAsync(embeddingRecord);
+                }
+                return new FileEmbeddingResultDto
+                {
+                    Message = "File can be summarised",
+                    CanSummarise = true
+                };
+            }
+            catch (System.Exception e)
+            {
+                return new FileEmbeddingResultDto
+                {
+                    Message = "File can't be summarised" + e.Message,
+                    CanSummarise = false
+                };
+            }
         }
 
         private async Task EnsureCategoryPermission(Category category, string role)
         {
             var access = await _accessLevelRepository.GetByIdAsync(category.AccessLevelId);
-            if (access.Access.ToLower() == "read-only" || access.Access.ToLower() == "admin" && role.ToLower() != "admin")
-                throw new UnauthorizedAccessException($"Cannot Upload in {category.CategoryName}, it is a {access.Access} category");
+            if (role.ToLower() != "admin" && (access.Access.ToLower() == "read-only" || access.Access.ToLower() == "admin"))
+            {
+                throw new UnauthorizedAccessException(
+                    $"Cannot upload in {category.CategoryName}. It is a {access.Access} category, and your role is {role}.");
+            }
+
             return;
         }
 
-        private async Task<Role> GetRoleByName(string roleName)
+        public async Task<Role> GetRoleByName(string roleName)
         {
             var roles = await _roleRepository.GetAllAsync();
             return roles.FirstOrDefault(r => r.RoleName.Equals(roleName, StringComparison.OrdinalIgnoreCase))
@@ -265,6 +342,16 @@ namespace WarehouseFileArchiverAPI.Services
 
             if (categoryAccess == null || !categoryAccess.CanUpload)
                 throw new AccessViolationException($"You do not have upload permission for category '{category.CategoryName}'.");
+        }
+
+        public async Task EnsureDownloadPermission(Guid roleId, Category category)
+        {
+            var roleCategoryAccesses = await _roleCategoryAccessRepository.GetAllAsync();
+            var categoryAccess = roleCategoryAccesses.FirstOrDefault(r =>
+                r.RoleId == roleId && r.CategoryId == category.Id);
+
+            if (categoryAccess == null || !categoryAccess.CanDownload)
+                throw new AccessViolationException($"You do not have download permission for category '{category.CategoryName}'.");
         }
 
         private async Task<FileArchive> GetOrCreateFileArchive(FileUploadDto files, Guid userId, Guid categoryId)
@@ -312,7 +399,7 @@ namespace WarehouseFileArchiverAPI.Services
             return filePath;
         }
 
-        private async Task<FileArchive?> GetByFileName(string fileName)
+        public async Task<FileArchive?> GetByFileName(string fileName)
         {
             var files = await _fileArchiveRepository.GetAllAsync();
 

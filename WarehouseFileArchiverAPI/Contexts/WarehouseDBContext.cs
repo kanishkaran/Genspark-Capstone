@@ -65,7 +65,25 @@ namespace WarehouseFileArchiverAPI.Contexts
                                                 .HasForeignKey(rc => rc.CategoryId)
                                                 .HasConstraintName("FK_RoleCategory_Category")
                                                 .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<FileVersion>().HasOne(fa => fa.FileArchive)
+                                               .WithMany(fv => fv.FileVersions)
+                                               .HasForeignKey(fv => fv.FileArchiveId)
+                                               .HasConstraintName("FK_FileVersion_Archive")
+                                               .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<FileVersion>().HasOne(f => f.Created)
+                                              .WithMany(fv => fv.fileVersions)
+                                              .HasForeignKey(f => f.CreatedBy)
+                                              .HasConstraintName("FK_FileVersion_Employee")
+                                              .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<FileVersion>().HasOne(f => f.ContentType)
+                                              .WithMany(fv => fv.FileVersions)
+                                              .HasForeignKey(f => f.ContentTypeId)
+                                              .HasConstraintName("FK_FileVersion_MediaType")
+                                              .OnDelete(DeleteBehavior.Restrict);
+
+                            
             // Seed Data for Admin
             var adminAccessLevelId = new Guid("11111111-1111-1111-1111-111111111111");
             var adminRoleId = new Guid("22222222-2222-2222-2222-222222222222");

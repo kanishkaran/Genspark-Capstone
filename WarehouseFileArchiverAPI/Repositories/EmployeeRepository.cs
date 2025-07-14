@@ -18,7 +18,7 @@ namespace WarehouseFileArchiverAPI.Repositories
         }
         public override async Task<IEnumerable<Employee>> GetAllAsync()
         {
-            var employees = await _context.Employees.ToListAsync();
+            var employees = await _context.Employees.Include(emp => emp.FileArchives).ToListAsync();
             if (employees.Count == 0)
                 throw new CollectionEmptyException("There are no employees present in the DB");
             return employees;

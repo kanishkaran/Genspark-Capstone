@@ -7,6 +7,7 @@ using WarehouseFileArchiverAPI.Models;
 using WarehouseFileArchiverAPI.Models.DTOs;
 using WarehouseFileArchiverAPI.Mappers;
 using WarehouseFileArchiverAPI.Exceptions;
+using DocumentFormat.OpenXml.Office2010.Excel;
 
 namespace WarehouseFileArchiverAPI.Services
 {
@@ -93,10 +94,12 @@ namespace WarehouseFileArchiverAPI.Services
                 .Take(searchDto.PageSize)
                 .Select(rc => new RoleCategoryAccessListDto
                 {
+                    Id = rc.Id,
                     RoleName = rc.Role?.RoleName ?? string.Empty,
                     CategoryName = rc.Category?.CategoryName ?? string.Empty,
                     CanUpload = rc.CanUpload,
-                    CanDownload = rc.CanDownload
+                    CanDownload = rc.CanDownload,
+                    IsDeleted = rc.IsDeleted
                 });
         }
 

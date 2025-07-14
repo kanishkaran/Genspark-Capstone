@@ -35,7 +35,7 @@ namespace WarehouseFileArchiverAPI.Services
                 mediaTypes = mediaTypes.Where(m => !m.IsDeleted);
 
             if (!string.IsNullOrWhiteSpace(searchDto.Search))
-                mediaTypes = mediaTypes.Where(m => m.TypeName.Contains(searchDto.Search));
+                mediaTypes = mediaTypes.Where(m => m.TypeName.Contains(searchDto.Search) || m.Extension.Contains(searchDto.Search));
 
             mediaTypes = searchDto.SortBy?.ToLower() switch
             {

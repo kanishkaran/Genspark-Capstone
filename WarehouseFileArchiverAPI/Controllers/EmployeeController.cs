@@ -10,7 +10,7 @@ namespace WarehouseFileArchiverAPI.Controllers
     [ApiController]
     [Route("api/v{version:apiVersion}/[controller]")]
     [ApiVersion("1.0")]
-    [Authorize]
+    // [Authorize]
     public class EmployeeController : ControllerBase
     {
         private readonly IEmployeeService _employeeService;
@@ -21,7 +21,7 @@ namespace WarehouseFileArchiverAPI.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin")]
+        // [Authorize(Roles = "Admin")]
         public async Task<ActionResult<ApiResponseDto<object>>> Search([FromQuery] EmployeeSearchDto searchDto)
         {
             try
@@ -45,6 +45,24 @@ namespace WarehouseFileArchiverAPI.Controllers
             try
             {
                 var employee = await _employeeService.GetById(id);
+                return Ok(ApiResponseDto<Employee>.SuccessReponse("Fetched employee successfully", employee));
+            }
+            catch (Exception ex)
+            {
+                return NotFound(ApiResponseDto<object>.ErrorResponse("Employee not found", new
+                {
+                    fields = ex.Message
+                }));
+            }
+        }
+
+        [HttpGet("email")]
+        [Authorize]
+        public async Task<ActionResult<ApiResponseDto<object>>> GetEmployeeByEmail([FromQuery] string email)
+        {
+            try
+            {
+                var employee = await _employeeService.GetEmployeeByEmail(email);
                 return Ok(ApiResponseDto<Employee>.SuccessReponse("Fetched employee successfully", employee));
             }
             catch (Exception ex)

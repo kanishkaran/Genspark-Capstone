@@ -14,5 +14,6 @@ namespace WarehouseFileArchiverAPI.Models.DTOs
         public Guid CategoryId { get; set; }
         public string CategoryName { get; set; } = string.Empty;
         public bool Status { get; set; }
+        public bool CanSummarise { get; set; }
     }
 }

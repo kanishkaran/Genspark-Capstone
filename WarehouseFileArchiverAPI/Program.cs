@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using System.Text;
 using AspNetCoreRateLimit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -8,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Microsoft.SemanticKernel;
 using Serilog;
 using WarehouseFileArchiverAPI.Contexts;
 using WarehouseFileArchiverAPI.Interfaces;
@@ -54,7 +54,7 @@ builder.Services.AddSwaggerGen(opt =>
                     Id="Bearer"
                 }
             },
-            new string[]{}
+            Array.Empty<string>()
         }
     });
 });
@@ -65,7 +65,6 @@ builder.Services.AddControllers()
                     opts.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
                     opts.JsonSerializerOptions.WriteIndented = true;
                 });
-
 
 builder.Services.AddDbContext<WarehouseDBContext>(options =>
 {
@@ -100,14 +99,15 @@ builder.Services.AddTransient<IRoleCategoryAccessService, RoleCategoryAccessServ
 builder.Services.AddTransient<ITokenService, TokenService>();
 builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<IAuditLogService, AuditLogService>();
-
-
 #endregion
 
 
 #region  Misc
 builder.Services.AddTransient<IChecksumService, ChecksumService>();
 builder.Services.AddSingleton<ITokenLogoutService, TokenLogoutService>();
+builder.Services.AddTransient<IFileSummaryService, FileSummaryService>();
+builder.Services.AddTransient<IFileTextExtractorService, FileTextExtractorService>();
+builder.Services.AddTransient<ISummarizationService, SummarizationService>();
 #endregion
 
 #region Policies
@@ -181,6 +181,33 @@ builder.Services.AddVersionedApiExplorer(options =>
     options.SubstituteApiVersionInUrl = true;
 });
 
+#region LLM
+#pragma warning disable SKEXP0070
+builder.Services.AddOllamaChatCompletion(
+    modelId: "llama3.2:3b",
+    endpoint: new Uri("http://localhost:11434")
+);
+
+builder.Services.AddTransient((serviceProvider) =>
+{
+    return new Kernel(serviceProvider);
+});
+#endregion
+
+#region Cors
+builder.Services.AddCors(opts =>
+{
+    opts.AddPolicy("AllowAngular", policy =>
+    {
+        policy.WithOrigins("http://localhost:4200")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
+#endregion
+
 var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
@@ -188,6 +215,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors("AllowAngular");
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseIpRateLimiting();
@@ -196,7 +224,7 @@ app.UseSerilogRequestLogging(options =>
 {
     options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
     {
-        diagnosticContext.Set("UserId", httpContext.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "Anonymous");
+        diagnosticContext.Set("UserId", httpContext.User?.Identity?.Name ?? "Anonymous");
         diagnosticContext.Set("Endpoint", httpContext.GetEndpoint()?.DisplayName ?? "Unknown");
     };
     options.MessageTemplate = "Handled {RequestPath} {RequestMethod} for {UserId}";

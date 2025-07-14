@@ -17,7 +17,9 @@ namespace WarehouseFileArchiverAPI.Repositories
         }
         public override async Task<IEnumerable<FileVersion>> GetAllAsync()
         {
-            var fileVersions = await _context.FileVersions.ToListAsync();
+            var fileVersions = await _context.FileVersions.Include(fv => fv.Created).Include(fv => fv.ContentType)
+                                                        .Include(fv => fv.FileArchive)
+                                                        .ToListAsync();
             
             return fileVersions.OrderBy(fv => fv.CreatedAt);
         }
