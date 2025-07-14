@@ -12,7 +12,7 @@ namespace WarehouseFileArchiverAPI.Interfaces
         Task<PaginationDto<FileArchiveResponseDto>> SearchFileArchives(SearchQueryDto searchDto);
         Task<FileArchiveResponseDto> GetById(Guid id);
         Task<string> UploadFile(FileUploadDto files, string userName, string role);
-        Task<FileDownloadDto> DownloadFile(string fileName, int versionNumber, string role, string currUser);
+        Task<FileDownloadDto> DownloadFile(string fileName, int versionNumber, string role);
         Task<bool> DeleteFileArchive(Guid id, string currUser);
 
         Task<FileArchive?> GetByFileName(string fileName);

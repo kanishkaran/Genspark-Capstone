@@ -64,8 +64,7 @@ namespace WarehouseFileArchiverAPI.Controllers
             try
             {
                 var role = User.FindFirst(ClaimTypes.Role)?.Value;
-                var user = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                var result = await _fileArchiveService.DownloadFile(requestDto.FileName, requestDto.VersionNumber, role, user);
+                var result = await _fileArchiveService.DownloadFile(requestDto.FileName, requestDto.VersionNumber, role);
 
                 return File(result.FileContent, result.ContentType, result.FileName);
             }

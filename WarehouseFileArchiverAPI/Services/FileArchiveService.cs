@@ -1,5 +1,5 @@
 
-using Microsoft.EntityFrameworkCore.Migrations.Operations;
+using Azure.Storage.Blobs;
 using Microsoft.SemanticKernel.Connectors.PgVector;
 using Microsoft.SemanticKernel.Embeddings;
 using OllamaSharp;
@@ -32,6 +32,7 @@ namespace WarehouseFileArchiverAPI.Services
         private readonly IRepository<Guid, Role> _roleRepository;
         private readonly IRepository<Guid, RoleCategoryAccess> _roleCategoryAccessRepository;
         private readonly IFileVersionService _fileVersionService;
+        private readonly BlobContainerClient _blobServiceClient;
 
         public FileArchiveService(IWebHostEnvironment environment,
                                   IRepository<Guid, FileArchive> fileArchiveRepository,
@@ -48,7 +49,8 @@ namespace WarehouseFileArchiverAPI.Services
                                   IEmployeeService employeeService,
                                   IChecksumService checksumService,
                                   IAuditLogService auditLogService,
-                                  IFileTextExtractorService fileTextExtractorService)
+                                  IFileTextExtractorService fileTextExtractorService,
+                                  BlobContainerClient blobServiceClient)
         {
             _env = environment;
             _fileArchiveRepository = fileArchiveRepository;
@@ -75,6 +77,8 @@ namespace WarehouseFileArchiverAPI.Services
             _ollamaClient = new OllamaApiClient(new Uri("http://localhost:11434"), "mxbai-embed-large");
             _vectorCollection = new PostgresCollection<string, FileEmbeddingRecord>("User ID=postgres;Password=[]kanish;Host=localhost;Port=5432;Database=WarehouseArchiveDB;", "FileEmbeddings");
 
+
+            _blobServiceClient = blobServiceClient;
         }
 
         public async Task<PaginationDto<FileArchiveResponseDto>> SearchFileArchives(SearchQueryDto searchDto)
@@ -149,7 +153,7 @@ namespace WarehouseFileArchiverAPI.Services
             };
         }
 
-        public async Task<FileDownloadDto> DownloadFile(string fileName, int versionNumber, string role, string currUser)
+        public async Task<FileDownloadDto> DownloadFile(string fileName, int versionNumber, string role)
         {
             try
             {
@@ -183,27 +187,23 @@ namespace WarehouseFileArchiverAPI.Services
                     await EnsureDownloadPermission(userRole.Id, category);
                 }
 
-                var filePath = Path.Combine(_env.ContentRootPath, $"Uploads/{category.CategoryName}", fileVersion.FilePath);
+        
+                var blobPath = $"{category.CategoryName}/{fileVersion.FilePath}";
+                var blobClient = _blobServiceClient.GetBlobClient(blobPath);
 
-                if (!File.Exists(filePath))
-                    throw new FileNotFoundException("File not found on disk.", filePath);
+                if (!await blobClient.ExistsAsync())
+                {
+                    throw new FileNotFoundException("No such file");
+                }
 
-                var bytes = await File.ReadAllBytesAsync(filePath);
+                var download = await blobClient.DownloadContentAsync();
 
                 var mediaType = await _mediaTypeRepository.GetByIdAsync(fileVersion.ContentTypeId);
-
-                await _auditLogService.LogAsync(
-                "File Archive",
-                fileArchive.Id,
-                "Download",
-                currUser ?? "system",
-                $"File {fileName} was Downloaded."
-            );
 
                 return new FileDownloadDto
                 {
                     ContentType = mediaType.TypeName ?? "application/octet-stream",
-                    FileContent = bytes,
+                    FileContent = download.Value.Content.ToArray(),
                     FileName = $"v{versionNumber}_{fileArchive.FileName}"
                 };
             }
@@ -265,14 +265,6 @@ namespace WarehouseFileArchiverAPI.Services
                 fileArchive.CanSummarise = true;
                 await _fileArchiveRepository.UpdateAsync(fileArchive.Id, fileArchive);
             }
-
-            await _auditLogService.LogAsync(
-                "File Archive",
-                fileArchive.Id,
-                "Upload",
-                userName ?? "system",
-                $"File {files?.File?.FileName} was uploaded."
-            );
 
             return summaryResult.Message;
         }
@@ -385,18 +377,20 @@ namespace WarehouseFileArchiverAPI.Services
 
         private async Task<string> SaveFileToDisk(IFormFile file, string categoryName)
         {
-            var folder = Path.Combine(_env.ContentRootPath, $"Uploads/{categoryName}");
-            Directory.CreateDirectory(folder);
+            // var folder = Path.Combine(_env.ContentRootPath, $"Uploads/{categoryName}");
+            // Directory.CreateDirectory(folder);
 
             var mediaType = await _mediaTypeService.GetMediaTypeByContentType(file.ContentType);
-            var filePath = Path.Combine(folder, $"{Guid.NewGuid()}{mediaType.Extension}");
+            var fileName = $"{Guid.NewGuid()}{mediaType.Extension}";
+            var blobPath = $"{categoryName}/{fileName}";
 
-            using (var stream = new FileStream(filePath, FileMode.Create))
+            var blobClient = _blobServiceClient.GetBlobClient(blobPath);
+
+            using (var stream = file.OpenReadStream())
             {
-                await file.CopyToAsync(stream);
+                await blobClient.UploadAsync(stream);
             }
-
-            return filePath;
+            return blobPath;
         }
 
         public async Task<FileArchive?> GetByFileName(string fileName)

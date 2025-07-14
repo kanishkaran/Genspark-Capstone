@@ -23,7 +23,7 @@ namespace WarehouseFileArchiverAPI.Controllers
             _authenticationService = authenticationService;
         }
 
-
+        [AllowAnonymous]
         [HttpPost("login")]
         public async Task<ActionResult<ApiResponseDto<object>>> LoginUser(UserLoginRequest request)
         {

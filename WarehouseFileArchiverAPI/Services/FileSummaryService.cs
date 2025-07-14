@@ -1,10 +1,14 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.PgVector;
 using Microsoft.SemanticKernel.Embeddings;
 using OllamaSharp;
 using WarehouseFileArchiverAPI.Exceptions;
 using WarehouseFileArchiverAPI.Interfaces;
 using WarehouseFileArchiverAPI.Models;
-
+using WarehouseFileArchiverAPI.Models.DTOs;
 
 namespace WarehouseFileArchiverAPI.Services
 {

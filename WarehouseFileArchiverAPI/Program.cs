@@ -1,5 +1,7 @@
 using System.Text;
 using AspNetCoreRateLimit;
+using Azure.Identity;
+using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,15 +19,25 @@ using WarehouseFileArchiverAPI.Policies;
 using WarehouseFileArchiverAPI.Repositories;
 using WarehouseFileArchiverAPI.Services;
 
+var builder = WebApplication.CreateBuilder(args);
+
+var keyVaultUrl = builder.Configuration["AzureBlob:KeyVaultUrl"];
+
+builder.Configuration.AddAzureKeyVault(new Uri(keyVaultUrl), new DefaultAzureCredential());
+
+
 Log.Logger = new LoggerConfiguration()
  .Enrich.FromLogContext()
     .Enrich.WithProperty("Application", "WarehouseFileArchiverAPI")
     .WriteTo.Console()
+    .WriteTo.AzureBlobStorage(
+        connectionString: builder.Configuration.GetConnectionString("AzureBlobStorage"),
+        storageContainerName: "logs",
+        storageFileName: "log-{yyyyMMdd}.txt"
+    )
     .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day)
     .Enrich.FromLogContext()
     .CreateLogger();
-
-var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseSerilog();
 
@@ -199,13 +211,17 @@ builder.Services.AddCors(opts =>
 {
     opts.AddPolicy("AllowAngular", policy =>
     {
-        policy.WithOrigins("http://localhost:4200")
+        policy.WithOrigins("http://localhost:4200", "https://storageaccountkanish.z13.web.core.windows.net")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
     });
 });
 
+#endregion
+
+#region AzureBlobService
+builder.Services.AddSingleton(new BlobContainerClient(new Uri(builder.Configuration["AzureBlob:ContainerSasUrl"])));
 #endregion
 
 var app = builder.Build();
