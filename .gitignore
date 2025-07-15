@@ -4,3 +4,5 @@ Uploads/
 *.log
 obj/
 Migrations/
+dist/
+node_modules/

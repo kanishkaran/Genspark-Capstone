@@ -1,0 +1,52 @@
+<div class="p-4">
+    <h5 class="mb-3">{{ isEditMode ? 'Edit Category' : 'Add Category' }}</h5>
+    <form (ngSubmit)="onFormSubmit()" #categoryForm="ngForm">
+      <div class="row g-3">
+
+        <div class="col-md-6">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Category Name</mat-label>
+            @if (isEditMode) {
+                <input matInput [(ngModel)]="formModel.categoryName" name="categoryName" required autocomplete="off"
+                  placeholder="Enter category name" disabled/>
+            }
+            @else {
+                <input matInput [(ngModel)]="formModel.categoryName" name="categoryName" required autocomplete="off" minlength="3"
+                  placeholder="Enter category name" />
+            }
+            @if (categoryForm.submitted && !formModel.categoryName ) {
+            <mat-error>Name is required of 3 characters length</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+
+        <div class="col-md-6">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Access Level</mat-label>
+            <mat-select [(ngModel)]="formModel.accessLevel" name="accessLevel" required>
+              @for (access of accessLevels; track $index) {
+
+              <mat-option [value]="access.access">{{ access.access
+                }}</mat-option>
+              }
+            </mat-select>
+            @if (categoryForm.submitted && !formModel.accessLevel) {
+            <mat-error>Access Level is
+              required</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+
+        <div class="d-flex align-items-end gap-2">
+          <button mat-flat-button color="primary" type="submit" [disabled]="categoryForm.invalid" class="w-100 btn btn-primary">
+            {{ isEditMode ? 'Update' : 'Add' }}
+          </button>
+          <button mat-stroked-button color="warn" type="button" (click)="cancelForm()" class="w-100 btn btn-outline-danger">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>

@@ -1,0 +1,328 @@
+<div class="dashboard-container">
+
+  <div class="dashboard-header">
+    <div class="header-content">
+      <div class="header-text">
+        <h1 class="dashboard-title">
+          <mat-icon class="title-icon">dashboard</mat-icon>
+          Dashboard Overview
+        </h1>
+        <p class="dashboard-subtitle">Welcome to your file management dashboard</p>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="summary-section">
+    <div class="summary-grid">
+      @for (card of summaryCards; track $index) {
+      <mat-card class="summary-card" [class]="card.color">
+        <mat-card-content>
+          <div class="card-content">
+            <div class="card-icon-wrapper">
+              <mat-icon class="card-icon">{{ card.icon }}</mat-icon>
+            </div>
+            <div class="card-info">
+              <div class="card-value">{{ card.value | number }}</div>
+              <div class="card-title">{{ card.title }}</div>
+            </div>
+          </div>
+          <div class="card-decoration"></div>
+        </mat-card-content>
+      </mat-card>
+      }
+    </div>
+  </div>
+
+  <div class="charts-section">
+    <div class="charts-grid">
+
+      @if (activityChartData) {
+
+      <mat-card class="chart-card full-width">
+        <mat-card-header>
+          <mat-icon mat-card-avatar class="chart-avatar chart-avatar-secondary">timeline</mat-icon>
+          <mat-card-title class="text-dark fw-bold">Recent Activity</mat-card-title>
+          <mat-card-subtitle class="text-secondary">File upload trends</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container">
+            <apx-chart [series]="activityChartData" [chart]="{
+                  type: 'area',
+                  height: 350,
+                  toolbar: {
+                    show: false
+                  }
+                }" [stroke]="{
+                  curve: 'smooth',
+                  width: 2
+                }" [fill]="{
+                  type: 'gradient',
+                  gradient: {
+                    shadeIntensity: 1,
+                    opacityFrom: 0.7,
+                    opacityTo: 0.3,
+                    stops: [0, 90, 100]
+                  }
+                }" [xaxis]="{
+                  categories: recentDates,
+                  labels: {
+                    style: {
+                      fontSize: '12px',
+                      fontWeight: 500
+                    }
+                  }
+                }" [yaxis]="{
+                  title: {
+                    text: 'Files',
+                    style: {
+                      fontSize: '14px',
+                      fontWeight: 600
+                    }
+                  }
+                }" [colors]="['#4facfe']" [grid]="{
+                  borderColor: '#f1f1f1',
+                  strokeDashArray: 3
+                }" [tooltip]="{
+                  theme: 'dark'
+                }">
+            </apx-chart>
+          </div>
+        </mat-card-content>
+      </mat-card>
+      }
+
+      @if (categoryChartData.values.length > 0) {
+
+      <mat-card class="chart-card ">
+        <mat-card-header>
+          <mat-icon mat-card-avatar class="chart-avatar chart-avatar-info">donut_large</mat-icon>
+          <mat-card-title class="text-dark fw-bold">File Categories Distribution</mat-card-title>
+          <mat-card-subtitle class="text-secondary">Files grouped by categories</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container">
+            <apx-chart [series]="categoryChartData.values" [chart]="{
+                  type: 'donut',
+                  height: 350,
+                  animations: {
+                    enabled: true
+                  }
+                }" [labels]="categoryChartData.labels"
+              [colors]="['#667eea', '#00c6ff', '#4facfe', '#fa709a', '#f093fb', '#a8edea', '#fed6e3']" [legend]="{
+                  position: 'right',
+                  fontSize: '14px',
+                  fontWeight: 500
+                }" [plotOptions]="plotOptions" [tooltip]="{
+                  theme: 'dark'
+                }" [responsive]="[{
+                  breakpoint: 768,
+                  options: {
+                    legend: {
+                      position: 'bottom'
+                    }
+                  }
+                }]">
+            </apx-chart>
+          </div>
+        </mat-card-content>
+      </mat-card>
+      }
+
+      @if (versionStats) {
+
+      <mat-card class="chart-card ">
+        <mat-card-header>
+          <mat-icon mat-card-avatar class="chart-avatar chart-avatar-warning">donut_small</mat-icon>
+          <mat-card-title class="text-dark fw-bold">Version Statistics</mat-card-title>
+          <mat-card-subtitle class="text-secondary">File versioning overview</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container">
+            <apx-chart [series]="versionStats" [chart]="{
+                  type: 'radialBar',
+                  height: 350,
+                  animations: {
+                    enabled: true,
+                    speed: 800
+                  }
+                }" [plotOptions]="versionPlotOptions"
+              [labels]="['Files with Versions', 'Summarisable Files', 'Active Files']"
+              [colors]="['#667eea', '#00c6ff', '#4facfe']">
+            </apx-chart>
+          </div>
+        </mat-card-content>
+      </mat-card>
+      }
+    </div>
+  </div>
+
+
+
+  <div class="recent-files-section">
+    <mat-card class="files-card">
+      <mat-card-header class="files-header">
+        <div class="header-body">
+          <mat-icon mat-card-avatar class="section-avatar">history</mat-icon>
+          <div class="header-text">
+            <mat-card-title>Recent Files</mat-card-title>
+            <mat-card-subtitle>Latest file activities and uploads</mat-card-subtitle>
+          </div>
+        </div>
+      </mat-card-header>
+
+      <mat-card-content class="files-content">
+        @if (recentFiles.length > 0) {
+        <div class="table-container">
+          <table mat-table [dataSource]="recentFiles" class="files-table">
+
+            <ng-container matColumnDef="fileName">
+              <th mat-header-cell *matHeaderCellDef class="table-header">
+                <div class="header-content">
+                  <mat-icon class="header-icon">description</mat-icon>
+                  <span>File Name</span>
+                </div>
+              </th>
+              <td mat-cell *matCellDef="let file" class="table-cell">
+                <div class="file-info">
+                  <mat-icon class="file-icon">insert_drive_file</mat-icon>
+                  <div class="file-details">
+                    <span class="file-name">{{ file.fileName }}</span>
+                    <span class="file-extension">.{{ file.fileName.split('.').pop() }}</span>
+                  </div>
+                </div>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="categoryName">
+              <th mat-header-cell *matHeaderCellDef class="table-header">
+                <div class="header-content">
+                  <mat-icon class="header-icon">category</mat-icon>
+                  <span>Category</span>
+                </div>
+              </th>
+              <td mat-cell *matCellDef="let file" class="table-cell">
+                <span class="category-badge">{{ file.categoryName }}</span>
+              </td>
+            </ng-container>
+
+
+            <ng-container matColumnDef="uploadedByName">
+              <th mat-header-cell *matHeaderCellDef class="table-header">
+                <div class="header-content">
+                  <mat-icon class="header-icon">person</mat-icon>
+                  <span>Uploaded By</span>
+                </div>
+              </th>
+              <td mat-cell *matCellDef="let file" class="table-cell">
+                <div class="user-info">
+                  <mat-icon class="user-icon">account_circle</mat-icon>
+                  <span class="user-name">{{ file.uploadedByName }}</span>
+                </div>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef class="table-header">
+                <div class="header-content">
+                  <mat-icon class="header-icon">info</mat-icon>
+                  <span>Status</span>
+                </div>
+              </th>
+              <td mat-cell *matCellDef="let file" class="table-cell">
+                <div class="status-indicator" [class]="file.status ? 'status-inactive' : 'status-active'">
+                  <mat-icon class="status-icon">
+                    {{ file.status ? 'cancel' : 'check_circle' }}
+                  </mat-icon>
+                  <span class="status-text">
+                    {{ file.status ? 'Inactive' : 'Active' }}
+                  </span>
+                </div>
+              </td>
+            </ng-container>
+
+
+            <ng-container matColumnDef="latestVersion">
+              <th mat-header-cell *matHeaderCellDef class="table-header">
+                <div class="header-content">
+                  <mat-icon class="header-icon">layers</mat-icon>
+                  <span>Latest Version</span>
+                </div>
+              </th>
+              <td mat-cell *matCellDef="let file" class="table-cell">
+                @if (file.latestVersion) {
+                <div class="version-info">
+                  <span class="version-badge">v{{ file.latestVersion.versionNumber }}</span>
+                  <span class="version-date">{{ file.latestVersion.createdAt | date:'short' }}</span>
+                </div>
+                } @else {
+                <span class="no-version">No versions</span>
+                }
+              </td>
+            </ng-container>
+
+
+            <ng-container matColumnDef="canSummarise">
+              <th mat-header-cell *matHeaderCellDef class="table-header">
+                <div class="header-content">
+                  <mat-icon class="header-icon">summarize</mat-icon>
+                  <span>AI Summary</span>
+                </div>
+              </th>
+              <td mat-cell *matCellDef="let file" class="table-cell">
+                <div class="summary-indicator"
+                  [class]="file.canSummarise ? 'summary-available' : 'summary-unavailable'">
+                  <mat-icon class="summary-icon">
+                    {{ file.canSummarise ? 'auto_awesome' : 'block' }}
+                  </mat-icon>
+                  <span class="summary-text">
+                    {{ file.canSummarise ? 'Available' : 'Not Available' }}
+                  </span>
+                </div>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns" class="table-header-row"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="table-data-row"></tr>
+          </table>
+        </div>
+        } @else {
+        <div class="empty-state">
+          <div class="empty-content">
+            <mat-icon class="empty-icon">inbox</mat-icon>
+            <h3 class="empty-title">No Recent Files</h3>
+            <p class="empty-description">Upload some files to see them appear here</p>
+            <button mat-raised-button color="primary" class="empty-action">
+              <mat-icon>cloud_upload</mat-icon>
+              Upload Files
+            </button>
+          </div>
+        </div>
+        }
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Quick Actions Section -->
+  <div class="quick-actions-section">
+    <mat-card class="actions-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar class="actions-avatar">flash_on</mat-icon>
+        <mat-card-title>Quick Actions</mat-card-title>
+        <mat-card-subtitle>Frequently used operations</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="actions-grid">
+          <button mat-raised-button class="quick-action-btn btn btn-outline-dark" (click)="navigateToUpload()">
+            <mat-icon>cloud_upload</mat-icon>
+            <span>Upload Files</span>
+          </button>
+          <button mat-raised-button class="quick-action-btn btn btn-outline-warning" (click)="navigateToFiles()">
+            <mat-icon>folder_open</mat-icon>
+            <span>Browse Files</span>
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

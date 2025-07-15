@@ -1,0 +1,152 @@
+<body>
+    <div class="section">
+        <div class="container">
+            <div class="row full-height justify-content-center">
+                <div class="col-12 text-center align-self-center py-5">
+                    <div class="section pb-5 pt-5 pt-sm-2 text-center">
+                        <h2 class="app-title display-6 fw-bold text-warning mb-4">
+                            <i-lucide [img]="FolderUpIcon" [size]="40"></i-lucide> Warehouse File Archiver
+                        </h2>
+
+                        <h6 class="mb-0 pb-3"><span>Log In </span><span>Sign Up</span></h6>
+                        <input class="checkbox" type="checkbox" id="reg-log" name="reg-log" [(ngModel)]="isSignup" />
+                        <label for="reg-log"></label>
+
+                        <div class="card-3d-wrap mx-auto">
+                            <div class="card-3d-wrapper">
+                              
+                                <div class="card-front">
+                                    <div class="center-wrap">
+                                        <form [formGroup]="loginForm" (ngSubmit)="onLoginSubmit()"
+                                            class="section text-center">
+                                            <h4 class="mb-4 pb-3">Log In</h4>
+                                            <div class="form-group">
+                                                <input type="email" formControlName="email" class="form-style"
+                                                    placeholder="Your Email" id="loginEmail" autocomplete="off" />
+                                                <i class="input-icon uil uil-at"></i>
+                                                @if (login_email.errors?.['email']) {
+                                                <span class="text-danger small">Provide valid email-id</span>
+                                                }
+                                            </div>
+                                            <div class="form-group mt-2">
+                                                <input type="password" formControlName="password" class="form-style"
+                                                    placeholder="Your Password" id="loginPassword" autocomplete="off" />
+                                                <i class="input-icon uil uil-lock-alt"></i>
+                                                @if (login_password.errors && login_password.touched) {
+                                                <span class="text-danger small">Password is required</span>
+                                                }
+                                            </div>
+
+                                            @if (loading) {
+                                            <div class="my-2">
+                                                <div class="spinner-border text-warning" role="status">
+                                                    <span class="visually-hidden">Loading...</span>
+                                                </div>
+                                            </div>
+                                            }
+
+                                            @if (error) {
+                                            <div class="alert alert-danger mt-2 py-2 px-3 small" role="alert">
+                                                {{ error }}
+                                            </div>
+                                            }
+                                            <button type="submit" class="btn mt-4"
+                                                [disabled]="loginForm.invalid">Submit</button>
+                                        </form>
+                                    </div>
+                                </div>
+
+                                <!-- Signup Form -->
+                                <div class="card-back">
+                                    <div class="center-wrap">
+                                        <form [formGroup]="userForm" (ngSubmit)="onSignupSubmit()"
+                                            class="section text-center">
+                                            <h4 class="mb-4 pb-3">Sign Up</h4>
+
+                                            <div class="form-group">
+                                                <input type="text" formControlName="firstname" class="form-style"
+                                                    placeholder="Your Firstname" id="signupFirstname"
+                                                    autocomplete="off" />
+                                                <i class="input-icon uil uil-user"></i>
+                                                @if (firstname.errors?.['bannedWordsError']) {
+                                                <span class="text-danger small">Firstname cannot contain null, test or
+                                                    admin</span>
+                                                }
+                                                @else if (firstname.touched && firstname.errors?.['lengthError']) {
+                                                <span class="text-danger small">Text Length must be atleast 3</span>
+                                                }
+                                            </div>
+
+                                            <div class="form-group mt-2">
+                                                <input type="text" formControlName="lastname" class="form-style"
+                                                    placeholder="Your Lastname" id="signupLastname"
+                                                    autocomplete="off" />
+                                                <i class="input-icon uil uil-user"></i>
+                                                @if (lastname.errors?.['bannedWordsError']) {
+                                                <span class="text-danger small">Lastname cannot contain null, test or
+                                                    admin</span>
+                                                }
+                                                @else if (lastname.touched && lastname.errors?.['lengthError']) {
+                                                <span class="text-danger small">Text Length must be atleast 3</span>
+                                                }
+                                            </div>
+
+                                            <div class="form-group mt-2">
+                                                <input type="text" formControlName="contactNumber" class="form-style"
+                                                    placeholder="Your Contact Number" id="signupContact"
+                                                    autocomplete="off" />
+                                                <i class="input-icon uil uil-user"></i>
+                                                @if (contact.errors && contact.touched) {
+                                                <span class="text-danger small">Contact is required and must be
+                                                    numbers</span>
+                                                }
+                                            </div>
+
+                                            <div class="form-group mt-2">
+                                                <input type="email" formControlName="email" class="form-style"
+                                                    placeholder="Your Email" id="signupEmail" autocomplete="off" />
+                                                <i class="input-icon uil uil-at"></i>
+                                                @if (reg_email.errors?.['email']) {
+                                                <span class="text-danger small">Provide valid email-id</span>
+                                                }
+                                            </div>
+
+                                            <div class="form-group mt-2">
+                                                <input type="password" formControlName="password" class="form-style"
+                                                    placeholder="Your Password" id="signupPassword"
+                                                    autocomplete="off" />
+                                                <i class="input-icon uil uil-lock-alt"></i>
+                                                @if (reg_password.errors?.['weakPassword'] && reg_password.touched) {
+                                                <span class="text-danger small">Password is weak. It must contain
+                                                    atleast one number and symbol</span>
+                                                }
+                                            </div>
+                                            @if (loading) {
+                                            <div class="my-2">
+                                                <div class="spinner-border text-warning" role="status">
+                                                    <span class="visually-hidden">Loading...</span>
+                                                </div>
+                                            </div>
+                                            }
+
+                                            @if (error) {
+                                            <div class="alert alert-danger mt-2 py-2 px-3 small" role="alert">
+                                                {{ error }}
+                                            </div>
+                                            }
+
+
+                                            <button type="submit" class="btn mt-4"
+                                                [disabled]="userForm.invalid">Submit</button>
+                                        </form>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>

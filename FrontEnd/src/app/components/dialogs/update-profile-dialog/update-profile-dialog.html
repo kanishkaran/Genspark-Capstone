@@ -1,0 +1,55 @@
+<div class="p-5">
+    <h2 mat-dialog-title>Update Profile</h2>
+
+    <form [formGroup]="userForm" mat-dialog-content class="pt-2">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <mat-form-field appearance="outline" class="w-100">
+                        <mat-label>First Name</mat-label>
+                        <input matInput type="text" formControlName="firstName">
+                        @if (FirstName.touched && FirstName.errors) {
+                        <mat-error>First Name is required with minimum length 3</mat-error>
+                        }
+                    </mat-form-field>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <mat-form-field appearance="outline" class="w-100">
+                        <mat-label>Last Name</mat-label>
+                        <input matInput type="text" formControlName="lastName">
+                        @if (LastName.touched && LastName.errors) {
+                        <mat-error>Last Name is required with minimum length 3</mat-error>
+                        }
+                    </mat-form-field>
+                </div>
+
+                <div class="col-md-12 mb-3">
+                    <mat-form-field appearance="outline" class="w-100">
+                        <mat-label>Email</mat-label>
+                        <input matInput type="email" formControlName="email">
+                        @if (Email.touched && Email.errors) {
+                        <mat-error>Please provide valid email address</mat-error>
+                        }
+                    </mat-form-field>
+                </div>
+
+                <div class="col-md-12 mb-3">
+                    <mat-form-field appearance="outline" class="w-100">
+                        <mat-label>Contact Number</mat-label>
+                        <input matInput type="tel" formControlName="contactNumber">
+                        @if (ContactNumber.touched && ContactNumber.errors) {
+                        <mat-error>Contact number is required</mat-error>
+                        }
+                    </mat-form-field>
+                </div>
+
+                <div class="d-flex align-items-end g-3">
+                    <button mat-button (click)="Cancel()" class="btn btn-outline-danger w-100">Cancel</button>
+                    <button mat-flat-button (click)="Submit()" class="btn btn-primary w-100"
+                        [disabled]="userForm.invalid">Update Profile</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

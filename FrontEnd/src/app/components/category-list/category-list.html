@@ -1,0 +1,15 @@
+<div class="pattern-bg">
+<div class="page-container">
+  <div class="page-header">
+    <h1>Categories</h1>
+    <p>View / Manage file categories and their access levels</p>
+  </div>
+
+
+
+
+  <app-data-table [columns]="columns" [data]="categories" [actions]="actions" [totalCount]="totalCount"
+    [pageSize]="pageSize" [isAdmin]="isAdmin" [loading]="loading" (queryChanged)="onQueryChanged($event)"
+    (addClicked)="openCategoryDialog()">
+  </app-data-table>
+</div>

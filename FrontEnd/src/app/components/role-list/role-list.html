@@ -1,0 +1,11 @@
+<div class="page-container">
+
+  <div class="page-header">
+    <h1>Roles</h1>
+    <p>View / Manage User Roles and their access levels</p>
+  </div>
+
+  <app-data-table [columns]="columns" [data]="roles" [actions]="actions" [totalCount]="totalCount" [pageSize]="pageSize"
+    [isAdmin]="isAdmin" [loading]="loading" (queryChanged)="onQueryChanged($event)" (addClicked)="openRoleDialog()">
+  </app-data-table>
+</div>

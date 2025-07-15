@@ -1,0 +1,246 @@
+<div class="user-category-container">
+  <div class="page-container">
+    <div class="page-header">
+      <div class="header-content">
+        <div class="header-text">
+          <h1 class="page-title">
+            <mat-icon class="title-icon">folder_shared</mat-icon>
+            My Categories
+          </h1>
+          <p class="page-subtitle">Browse and manage your authorized file categories</p>
+        </div>
+        @if (!selectedCategory) {
+
+        <div class="header-stats">
+          <div class="stat-card">
+            <mat-icon class="stat-icon">folder</mat-icon>
+            <div class="stat-info">
+              <span class="stat-number">{{ myAuthorisedCategories.length }}</span>
+              <span class="stat-label">Categories</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <mat-icon class="stat-icon">description</mat-icon>
+            <div class="stat-info">
+              <span class="stat-number">{{ files.length }}</span>
+              <span class="stat-label">Total Files</span>
+            </div>
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+
+    @if (selectedCategory) {
+
+    <div class="breadcrumb-section">
+      <nav class="breadcrumb-nav">
+        <button mat-button class="breadcrumb-item " (click)="goBack()">
+          <mat-icon>home</mat-icon>
+          <span>Categories</span>
+        </button>
+        <mat-icon class="breadcrumb-separator">chevron_right</mat-icon>
+        <span class="breadcrumb-current">
+          <mat-icon>folder_open</mat-icon>
+          {{ selectedCategory.categoryName }}
+        </span>
+      </nav>
+    </div>
+    }
+
+    @if (!selectedCategory) {
+
+    <div class="categories-section">
+      <div class="section-header">
+        <h2>
+          <mat-icon>folder</mat-icon>
+          Available Categories
+        </h2>
+        <p>Click on any folder to view its contents</p>
+      </div>
+
+      @if (myAuthorisedCategories.length > 0) {
+
+      <div class="categories-grid">
+        @for (category of myAuthorisedCategories; track $index) {
+
+        <div class="category-folder" [class.admin-folder]="category.isAdminOnly" (click)="openCategory(category)">
+
+          <div class="folder-icon-wrapper">
+            <mat-icon class="folder-icon">
+              {{ category.isAdminOnly ? 'folder_special' : 'folder' }}
+            </mat-icon>
+            @if (category.isAdminOnly) {
+            <div class="folder-badge">
+              <mat-icon>admin_panel_settings</mat-icon>
+            </div>
+            }
+          </div>
+
+          <div class="folder-content">
+            <h3 class="folder-name">{{ category.categoryName }}</h3>
+            <p class="folder-access">{{ category.access }}</p>
+
+            <div class="folder-permissions">
+              @if (category.canDownload) {
+              <div class="permission-item">
+                <mat-icon class="permission-icon download">download</mat-icon>
+                <span>Download</span>
+              </div>
+              }
+              @if (category.canUpload) {
+              <div class="permission-item">
+                <mat-icon class="permission-icon upload">upload</mat-icon>
+                <span>Upload</span>
+              </div>
+              }
+            </div>
+
+          </div>
+
+        </div>
+        }
+      </div>
+      }
+      @else {
+      <div class="empty-state">
+        <div class="empty-content">
+          <mat-icon class="empty-icon">folder_off</mat-icon>
+          <h3 class="empty-title">No Categories Available</h3>
+          <p class="empty-description">You don't have access to any categories yet. Contact your administrator for
+            access.</p>
+        </div>
+      </div>
+      }
+
+
+    </div>
+    }
+
+
+    @if (selectedCategory) {
+    <div class="files-section">
+      <div class="folder-header">
+        <div class="folder-info">
+          <div class="folder-icon-large">
+            <mat-icon>{{ selectedCategory.isAdminOnly ? 'folder_special' : 'folder_open' }}</mat-icon>
+          </div>
+          <div class="folder-details">
+            <h2 class="folder-title">{{ selectedCategory.categoryName }}</h2>
+            <p class="folder-subtitle">{{ selectedCategory.access }} Access</p>
+            <div class="folder-permissions-large">
+              @if (selectedCategory.canDownload) {
+
+              <span class="permission-badge download">
+                <mat-icon>download</mat-icon>
+                Download Enabled
+              </span>
+              }
+              @if (selectedCategory.canUpload) {
+
+              <span class="permission-badge upload">
+                <mat-icon>upload</mat-icon>
+                Upload Enabled
+              </span>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="folder-actions">
+          <button mat-raised-button color="primary" class="btn btn-primary" (click)="goBack()">
+            <mat-icon>arrow_back</mat-icon>
+            Back to Categories
+          </button>
+          @if (selectedCategory.canUpload) {
+          <button mat-raised-button color="primary" class="btn btn-primary"
+            (click)="upload(selectedCategory.categoryName)">
+            <mat-icon>upload</mat-icon>
+            Upload
+          </button>
+          }
+        </div>
+      </div>
+
+      <!-- Files Grid -->
+      <div class="files-content">
+        <div class="files-header">
+          <h3>
+            <mat-icon>description</mat-icon>
+            Files in this Category
+            <span class="file-count-badge">{{ filesInCategory.length }}</span>
+          </h3>
+        </div>
+
+        @if (filesInCategory.length > 0) {
+
+        <div class="files-grid">
+
+          @for (file of filesInCategory; track $index) {
+
+          <div class="file-item">
+            <div class="file-icon-wrapper">
+              <mat-icon class="file-icon">folder</mat-icon>
+            </div>
+
+            <div class="file-content">
+              <h4 class="file-name" [title]="file.fileName">{{ file.fileName }}</h4>
+              <div class="file-meta">
+                <div class="meta-item">
+                  <mat-icon>person</mat-icon>
+                  <span>{{ file.uploadedByName }}</span>
+                </div>
+              </div>
+
+              <div class="file-status">
+                <span class="status-indicator" [class.active]="!file.status">
+                  <mat-icon>{{ file.status ? 'cancel' : 'check_circle' }}</mat-icon>
+                  {{ file.status ? 'Inactive' : 'Active' }}
+                </span>
+              </div>
+            </div>
+
+            @if (selectedCategory.canDownload) {
+
+            <div class="file-actions">
+              <button mat-icon-button color="primary" (click)="downloadFile(file.fileName)">
+                <mat-icon>download</mat-icon>
+              </button>
+            </div>
+            }
+          </div>
+          }
+        </div>
+        }
+
+        @if (filesInCategory.length === 0) {
+        <div class="empty-files-state">
+          <div class="empty-content">
+            <mat-icon class="empty-icon">inbox</mat-icon>
+            <h3 class="empty-title">No Files Found</h3>
+            <p class="empty-description">This category doesn't contain any files yet.</p>
+
+            @if (selectedCategory.canUpload) {
+
+            <button mat-raised-button class="upload-button btn btn-outline-primary">
+              <mat-icon>cloud_upload</mat-icon>
+              Upload Files
+            </button>
+            }
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+    }
+
+    @if (loading) {
+    <div class="loading-overlay">
+      <div class="loading-content">
+        <mat-spinner diameter="60"></mat-spinner>
+        <p>Loading files...</p>
+      </div>
+    </div>
+    }
+  </div>
+</div>

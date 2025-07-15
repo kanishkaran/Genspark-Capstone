@@ -1,0 +1,190 @@
+<div class="profile-container">
+    <div class="profile-header">
+        <div class="header-background"></div>
+        <div class="profile-content">
+            <div class="avatar-section">
+                <div class="avatar-circle">
+                    <span class="avatar-initials">{{ getInitials(employee.firstName, employee.lastName) }}</span>
+                </div>
+                <div class="status-indicator" [class.active]="employee.isActive">
+                    <mat-icon>{{ employee.isActive ? 'check_circle' : 'cancel' }}</mat-icon>
+                </div>
+            </div>
+
+            <div class="profile-info">
+                <h1 class="profile-name">{{ getFullName() || 'Loading...' }}</h1>
+                <p class="profile-email">{{ employee.email }}</p>
+                <div class="profile-badges">
+                    <mat-chip-set>
+                        <mat-chip [class.admin-chip]="isAdmin" [class.user-chip]="!isAdmin">
+                            <mat-icon matChipAvatar>{{ isAdmin ? 'admin_panel_settings' : 'person' }}</mat-icon>
+                            {{ employee.firstName == 'Admin' ? 'Administrator' : 'Employee' }}
+                        </mat-chip>
+                        <mat-chip [class.active-chip]="employee.isActive" [class.inactive-chip]="!employee.isActive">
+                            <mat-icon matChipAvatar>{{ employee.isActive ? 'verified' : 'block' }}</mat-icon>
+                            {{ employee.isActive ? 'Active' : 'Inactive' }}
+                        </mat-chip>
+                    </mat-chip-set>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="profile-body">
+        <div class="profile-cards">
+
+            <mat-card class="info-card">
+                <mat-card-header>
+                    <mat-icon mat-card-avatar>person</mat-icon>
+                    <mat-card-title>Personal Information</mat-card-title>
+                    <mat-card-subtitle>Basic profile details</mat-card-subtitle>
+                </mat-card-header>
+
+                <mat-card-content>
+                    <div class="info-grid">
+
+                        <div class="info-item">
+                            <div class="info-label">
+                                <mat-icon>person</mat-icon>
+                                <span>First Name</span>
+                            </div>
+                            <div class="info-value">{{ employee.firstName || 'N/A' }}</div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-label">
+                                <mat-icon>person_outline</mat-icon>
+                                <span>Last Name</span>
+                            </div>
+                            <div class="info-value">{{ employee.lastName || 'N/A' }}</div>
+                        </div>
+                    </div>
+                </mat-card-content>
+            </mat-card>
+
+
+            <mat-card class="info-card">
+                <mat-card-header>
+                    <mat-icon mat-card-avatar>phone</mat-icon>
+                    <mat-card-title>Contact Information</mat-card-title>
+                    <mat-card-subtitle>Communication details</mat-card-subtitle>
+                </mat-card-header>
+
+                <mat-card-content>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label">
+                                <mat-icon>phone</mat-icon>
+                                <span>Contact Number</span>
+                            </div>
+                            <div class="info-value">
+                                <a href="tel:{{ employee.contactNumber }}" class="contact-link">
+                                    {{ employee.contactNumber || 'N/A' }}
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-label">
+                                <mat-icon>email</mat-icon>
+                                <span>Email</span>
+                            </div>
+                            <div class="info-value">
+                                <a href="mailto:{{ employee.email }}" class="contact-link">
+                                    {{ employee.email || 'N/A' }}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </mat-card-content>
+            </mat-card>
+
+
+            <mat-card class="info-card">
+                <mat-card-header>
+                    <mat-icon mat-card-avatar>account_circle</mat-icon>
+                    <mat-card-title>Account Status</mat-card-title>
+                    <mat-card-subtitle>Account information and status</mat-card-subtitle>
+                </mat-card-header>
+
+                <mat-card-content>
+                    <div class="status-section">
+                        <div class="status-item">
+                            <div class="status-icon" [class.active]="employee.isActive">
+                                <mat-icon>{{ employee.isActive ? 'check_circle' : 'cancel' }}</mat-icon>
+                            </div>
+                            <div class="status-info">
+                                <h4>Account Status</h4>
+                                <p>{{ employee.isActive ? 'Active and operational' : 'Account is inactive' }}</p>
+                            </div>
+                        </div>
+
+                        <mat-divider></mat-divider>
+
+                        <div class="status-item">
+                            <div class="status-icon admin">
+                                <mat-icon>{{ isAdmin ? 'admin_panel_settings' : 'person' }}</mat-icon>
+                            </div>
+                            <div class="status-info">
+                                <h4>Role</h4>
+                                <p>{{  roleName }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </mat-card-content>
+            </mat-card>
+
+
+            @if (employee.fileArchives) {
+
+            <mat-card class="info-card">
+                <mat-card-header>
+                    <mat-icon mat-card-avatar>folder</mat-icon>
+                    <mat-card-title>File Activity</mat-card-title>
+                    <mat-card-subtitle>File management statistics</mat-card-subtitle>
+                </mat-card-header>
+
+                <mat-card-content>
+                    <div class="activity-stats">
+                        <div class="stat-item">
+                            <div class="stat-number">{{ employee.fileArchives?.$values?.length || 0 }}</div>
+                            <div class="stat-label">Files Uploaded</div>
+                        </div>
+                    </div>
+                </mat-card-content>
+            </mat-card>
+            }
+        </div>
+
+
+        @if (
+        isAdmin || userName === currentUser
+        ) {
+
+        <div class="profile-actions">
+            @if (shouldCompleteProfile) {
+                <button mat-raised-button color="primary" (click)="openEditDialog(employee)">
+                <mat-icon>edit</mat-icon>
+                Complete Profile
+            </button>
+            }
+            @else {
+                <button mat-raised-button color="primary" (click)="openEditDialog(employee)">
+                    <mat-icon>edit</mat-icon>
+                    Update Profile
+                </button>
+            }
+
+            @if (
+            userName == currentUser
+            ) {
+            <button mat-raised-button color="accent" (click)="openChangePasswordDialog(employee)">
+                <mat-icon>lock</mat-icon>
+                Change Password
+            </button>
+            }
+
+        </div>
+        }
+    </div>
+</div>

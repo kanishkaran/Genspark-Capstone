@@ -1,0 +1,80 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #6f42c1, #6610f2) !important;
+}
+
+.bg-glass {
+  background-color: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.bg-glass-light {
+  background: rgba(245, 245, 255, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.nav-link {
+  transition: all 0.3s ease-in-out;
+  color: #333;
+}
+
+
+.active-link {
+  background: linear-gradient(135deg, #6f42c1, #6610f2);
+  color: white !important;
+  box-shadow: 0 0 10px rgba(102, 16, 242, 0.4);
+}
+
+
+
+.mat-list-item .mat-icon {
+  font-size: 20px;
+}
+
+.font-inter {
+  font-family: 'Inter', sans-serif;
+}
+
+.bg-dark {
+  background-color: #f2f2f2 !important;
+}
+
+.text-light {
+  color: #c4c3ca !important;
+}
+
+.text-dark {
+  color: #1f2029 !important;
+}
+
+.glass-effect {
+  background: rgba(42, 43, 56, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+
+
+.glass-header {
+  background: linear-gradient(145deg, #102770, #1f2029);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+
+
+
+.nav-link:hover,
+.active-link {
+  background-color: rgba(255, 235, 167, 0.1);
+  color: #ffeba7 !important;
+}
+
+.hover-glow:hover {
+  text-shadow: 0 0 6px rgba(255, 235, 167, 0.4);
+}

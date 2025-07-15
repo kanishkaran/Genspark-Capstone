@@ -1,0 +1,12 @@
+<div class="page-container">
+    <div class="page-header">
+        <h1>Access</h1>
+        <p>View / Manage file access levels</p>
+    </div>
+
+
+    <app-data-table [columns]="columns" [data]="accessLevels" [actions]="actions" [totalCount]="totalCount"
+        [pageSize]="pageSize" [isAdmin]="isAdmin" [loading]="loading" (queryChanged)="onQueryChanged($event)"
+        (addClicked)="openAccessDialog()">
+    </app-data-table>
+</div>

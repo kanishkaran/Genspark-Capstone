@@ -1,0 +1,152 @@
+<div class="data-table-container">
+
+  <div class="table-container w-100 px-4 py-4 rounded-4 shadow-lg bg-white">
+
+
+    @if (showSearch || isAdmin) {
+    <div class="table-header row g-4 align-items-end mb-4">
+      @if (showSearch) {
+      <div class="col-md-6 col-lg-7">
+        <mat-form-field appearance="outline" class="w-100 search-field">
+          <mat-label>Search Records</mat-label>
+          <input matInput (keyup)="onSearch($event)" placeholder="Type to search..." autocomplete="off" />
+          <mat-icon matSuffix class="search-icon">search</mat-icon>
+        </mat-form-field>
+      </div>
+      }
+
+      @if (isAdmin) {
+      <div class="col-md-6 col-lg-5 d-flex justify-content-end align-items-center gap-3 flex-wrap">
+        <div class="toggle-container">
+          <mat-slide-toggle [(ngModel)]="includeInactive" (change)="onIncludeInactiveChange()" class="custom-toggle">
+            <span class="toggle-label">Include Inactive</span>
+          </mat-slide-toggle>
+        </div>
+
+        @if (!disableAdd) {
+        <button mat-raised-button (click)="onAdd()" class="add-button fw-bold d-flex align-items-center gap-2">
+          <mat-icon class="add-icon">add</mat-icon>
+          <span class="text-white">Add New</span>
+        </button>
+        }
+        @else {
+        <div class="toggle-container">
+          <mat-slide-toggle [(ngModel)]="vectorSearch" (change)="onSearchModeChange()" class="custom-toggle me-2">
+            <span class="toggle-label">Semantic Search</span>
+          </mat-slide-toggle>
+        </div>
+        }
+      </div>
+      }
+    </div>
+    }
+
+
+    <div class="table-wrapper position-relative rounded-3 overflow-hidden" [class.loading]="loading">
+      @if (loading) {
+      <div class="loading-overlay">
+        <mat-progress-bar mode="indeterminate" color="primary" class="loading-bar"></mat-progress-bar>
+      </div>
+      }
+
+
+      <div class="table-scroll-container">
+        <table mat-table [dataSource]="dataSource" matSort class="enhanced-table w-100">
+
+          @for (column of columns; track $index) {
+          <ng-container [matColumnDef]="column.key">
+            @if (column.sortable) {
+            <th mat-header-cell *matHeaderCellDef [mat-sort-header]='column.key' class="table-header-cell sortable">
+              <div class="header-content">
+                <span class="header-text">{{ column.label }}</span>
+
+              </div>
+            </th>
+            } @else {
+            <th mat-header-cell *matHeaderCellDef class="table-header-cell">
+              <div class="header-content">
+                <span class="header-text">{{ column.label }}</span>
+              </div>
+            </th>
+            }
+
+            <td mat-cell *matCellDef="let element" [attr.data-label]="column.label" class="table-data-cell">
+              @if (column.pipe === 'boolean') {
+              <div class="status-indicator">
+                @if (!(column.key == "canUpload" || column.key == "canDownload" || column.key == "isActive" ||
+                column.key == "canSummarise")) {
+
+                <mat-icon [class]="!element[column.key] ? 'status-active' : 'status-inactive'">
+                  {{ !element[column.key] ? 'check_circle' : 'cancel' }}
+                </mat-icon>
+                <span class="status-text" [class]="!element[column.key] ? 'text-success' : 'text-danger'">
+                  {{ !element[column.key] ? 'Active' : 'Inactive' }}
+                </span>
+                }
+                @else {
+                <mat-icon [class]="element[column.key] ? 'status-active' : 'status-inactive'">
+                  {{ element[column.key] ? 'check_circle' : 'cancel' }}
+                </mat-icon>
+                }
+              </div>
+              } @else {
+              <span class="cell-content">{{ element[column.key] }}</span>
+              }
+            </td>
+          </ng-container>
+          }
+
+          @if (actions.length) {
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef class="table-header-cell actions-header">
+              <div class="header-content">
+                <span class="header-text">Actions</span>
+              </div>
+            </th>
+            <td mat-cell *matCellDef="let element" class="table-data-cell actions-cell">
+              <div class="actions-container">
+                @for (action of getVisibleActions(); track $index) {
+                @if (!element.isDeleted && action?.showIf(element)) {
+                <button mat-icon-button color="primary" [matTooltip]="action.label" (click)="action.action(element)"
+                  class="action-button" [class]="'action-' + action.icon">
+                  <mat-icon class="action-icon">{{ action.icon }}</mat-icon>
+                </button>
+                }
+                }
+              </div>
+            </td>
+          </ng-container>
+          }
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns" class="table-header-row"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="table-data-row"></tr>
+        </table>
+      </div>
+
+
+      @if (!loading && dataSource.data.length === 0) {
+      <div class="empty-state-container">
+        <div class="empty-state-content">
+          <div class="empty-icon-wrapper">
+            <mat-icon class="empty-icon">inbox</mat-icon>
+          </div>
+          <h3 class="empty-title">No Data Available</h3>
+          <p class="empty-description">There are no records to display at the moment.</p>
+          @if (isAdmin) {
+          <button mat-raised-button color="primary" (click)="onAdd()" class="empty-action-button">
+            <mat-icon>add</mat-icon>
+            Add First Record
+          </button>
+          }
+        </div>
+      </div>
+      }
+    </div>
+
+
+    <div class="paginator-container mt-4">
+      <mat-paginator [length]="totalCount" [pageSize]="pageSize" [pageSizeOptions]="[10, 25, 50, 100]"
+        (page)="onPageChange($event)" showFirstLastButtons class="enhanced-paginator"></mat-paginator>
+    </div>
+  </div>
+</div>

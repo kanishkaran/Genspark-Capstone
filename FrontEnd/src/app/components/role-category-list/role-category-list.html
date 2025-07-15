@@ -1,0 +1,10 @@
+<div class="page-container">
+    <div class="page-header">
+        <h1>RoleCategories</h1>
+        <p>View / Manage Role - Category Access</p>
+    </div>
+    <app-data-table [columns]="columns" [data]="roleCategories" [actions]="actions" [totalCount]="totalCount"
+        [pageSize]="pageSize" [isAdmin]="isAdmin" [loading]="loading" (queryChanged)="onQueryChanged($event)"
+        (addClicked)="openRoleCategoryDialog()">
+    </app-data-table>
+</div>

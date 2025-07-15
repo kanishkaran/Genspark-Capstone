@@ -1,0 +1,57 @@
+<div class="summary-dialog">
+    <div class="dialog-header">
+        <h2 mat-dialog-title>
+            <mat-icon>summarize</mat-icon>
+            File Summary
+        </h2>
+        <button mat-icon-button mat-dialog-close>
+            <mat-icon>close</mat-icon>
+        </button>
+    </div>
+
+    <mat-dialog-content class="dialog-content">
+        <div class="file-info-card">
+            <h3>File Information</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>File Name:</label>
+                    <span>{{ data.file.fileName }}</span>
+                </div>
+                @if (!search) {
+                <div class="info-item">
+                    <label>Category:</label>
+                    <span class="category-badge">{{ data.file.categoryName }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Uploaded By:</label>
+                    <span>{{ data.file.uploadedByName }}</span>
+                </div>
+
+                }
+            </div>
+        </div>
+
+        <div class="summary-card">
+            <h3>
+                <mat-icon>auto_awesome</mat-icon>
+                AI Generated Summary
+            </h3>
+            <div class="summary-content" [innerHTML]="rawHtml">
+                <!-- <p>{{ data.summary.summary }}</p> -->
+            </div>
+            <div class="summary-meta">
+
+                <small>
+                    <mat-icon>schedule</mat-icon>
+                    Generated on {{ Time | date:'medium' }}
+                </small>
+                @if(search) {
+                <small>
+                    <mat-icon>score</mat-icon>
+                    {{data.score}}
+                </small>
+                }
+            </div>
+        </div>
+    </mat-dialog-content>
+</div>

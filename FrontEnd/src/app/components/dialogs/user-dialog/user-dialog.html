@@ -1,0 +1,101 @@
+<div class="p-4">
+    <h5 class="mb-3">{{ isEditMode ? 'Edit User' : 'Add User' }}</h5>
+    <form (ngSubmit)="onFormSubmit()" #userForm="ngForm">
+        <div class="row g-3">
+
+            @if(isEditMode) {
+            <div class="col-md-6">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>User Name</mat-label>
+                    <input matInput [(ngModel)]="updateFormModel.username" name="username" required autocomplete="off"
+                        placeholder=" user name" disabled />
+                </mat-form-field>
+            </div>
+
+
+            <div class="col-md-6">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Role Name</mat-label>
+                    <mat-select [(ngModel)]="updateFormModel.roleName" name="accessLevel" required>
+                        @for (role of roles; track $index) {
+
+                        <mat-option [value]="role.roleName">{{ role.roleName
+                            }}</mat-option>
+                        }
+                    </mat-select>
+                    @if (userForm.submitted && !updateFormModel.roleName) {
+                    <mat-error>Role is
+                        required</mat-error>
+                    }
+                </mat-form-field>
+            </div>
+            }
+            @else {
+
+            <div class="col-md-4">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>User Name</mat-label>
+                    <input matInput [(ngModel)]="createFormModel.username" name="username" required autocomplete="off"
+                        minlength="3" placeholder="Enter your user name" />
+                </mat-form-field>
+            </div>
+            @if (userForm.submitted && !createFormModel.username) {
+            <mat-error>Name is required</mat-error>
+            }
+
+            <div class="col-md-4">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Password</mat-label>
+                    <input matInput [(ngModel)]="createFormModel.password" name="password" required autocomplete="off"
+                        minlength="6" placeholder="Enter your password" />
+                </mat-form-field>
+            </div>
+            @if (userForm.submitted && !createFormModel.password) {
+            <mat-error>password is required</mat-error>
+            }
+
+            <div class="col-md-4">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Role Name</mat-label>
+                    <mat-select [(ngModel)]="createFormModel.roleName" name="accessLevel" required>
+                        @for (role of roles; track $index) {
+
+                        <mat-option [value]="role.roleName">{{ role.roleName
+                            }}</mat-option>
+                        }
+                    </mat-select>
+                    @if (userForm.submitted && !createFormModel.roleName) {
+                    <mat-error>Role is
+                        required</mat-error>
+                    }
+                </mat-form-field>
+            </div>
+
+            @if (createFormModel.roleName == "Admin") {
+            <div class="col-12">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Secret Key</mat-label>
+                    <input matInput [(ngModel)]="createFormModel.secretKey" name="password" required autocomplete="off"
+                        minlength="6" placeholder="Enter your secret key" />
+                </mat-form-field>
+            </div>
+            }
+
+
+
+            }
+
+
+            <div class="d-flex align-items-end gap-2">
+                <button mat-flat-button color="primary" type="submit" [disabled]="userForm.invalid"
+                    class="w-100 btn btn-primary">
+                    {{ isEditMode ? 'Update' : 'Add' }}
+                </button>
+                <button mat-stroked-button color="warn" type="button" (click)="cancelForm()"
+                    class="w-100 btn btn-outline-danger">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </form>
+</div>

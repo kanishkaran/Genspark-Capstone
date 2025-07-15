@@ -1,0 +1,94 @@
+<div class="container my-4 p-4 bg-white shadow-sm rounded upload-container">
+  <div class="border border-2 border-primary-subtle rounded text-center p-5 mb-4 bg-light drop-zone"
+    [class.bg-opacity-50]="isDragOver" (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)"
+    (drop)="onDrop($event)" (click)="fileInput.click()">
+    <mat-icon class="display-3 text-primary mb-2">cloud_upload</mat-icon>
+    <h5 class="fw-semibold">Drag & Drop Files</h5>
+    <p class="text-muted mb-0">
+      or click to <span class="text-primary text-decoration-underline">browse</span>
+    </p>
+
+    <input #fileInput type="file" multiple hidden (change)="onFileSelected($event)" />
+
+     @if (uploading) {
+          <div class="loading-overlay">
+            <div class="loading-content">
+                <video autoplay loop muted playsinline class="loading-animation">
+                    <source src="/animations/file-upload.webm" type="video/webm" />
+
+                    Your browser does not support the video tag.
+                </video>
+
+                <p>Please wait until we upload...</p>
+            </div>
+        </div>
+        }
+  </div>
+
+  @if(selectedFiles.length > 0) {
+
+  <div>
+    <h6 class="mb-3 fw-bold text-black">Selected Files</h6>
+
+    @for (file of selectedFiles; track $index; let i = $index) {
+      
+
+    <div
+      class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between border-start border-4 border-primary rounded shadow-sm mb-3 p-3 gap-3 bg-white">
+      <div class="d-flex align-items-center gap-2 w-100">
+        <mat-icon class="fs-3 text-primary upload-icon">insert_drive_file</mat-icon>
+        <div class="flex-grow-1">
+          <div class="fw-semibold text-black">{{ file.name }}</div>
+          <small class="text-muted">{{ formatFileSize(file.size) }}</small>
+        </div>
+        
+      </div>
+
+      <mat-form-field appearance="outline" class="flex-shrink w-100 w-md-25">
+        <mat-label>Category</mat-label>
+        @if (specificCategory) {
+        <mat-select [(value)]="specificCategory" disabled>
+          <mat-option [value]="specificCategory">
+            {{ specificCategory }}
+          </mat-option>
+        </mat-select>
+        }
+        @else {
+        <mat-select [(value)]="selectedCategories[i]">
+          @for (category of categories; track $index) {
+          <mat-option [value]="category.categoryName">
+            {{ category.categoryName }} - {{ category.access }}
+          </mat-option>
+          }
+        </mat-select>
+        }
+      </mat-form-field>
+
+      <button mat-icon-button color="warn" (click)="removeFile(i)" class="btn btn-outline-danger">
+        <mat-icon>delete</mat-icon>
+      </button>
+    </div>
+    }
+
+    <div class="d-flex gap-3 mb-3 flex-wrap">
+      <button mat-raised-button color="primary" [disabled]="uploading || !allFilesHaveCategory()"
+        (click)="uploadFiles()" class="btn btn-primary d-flex align-items-center gap-2">
+        @if(uploading) {
+
+        <mat-spinner diameter="20"></mat-spinner>
+        }
+        @else {
+
+        <mat-icon>upload</mat-icon>
+        }
+        {{ uploading ? 'Uploading...' : 'Upload Files' }}
+      </button>
+
+      <button mat-stroked-button color="accent" (click)="clearFiles()" class="btn btn-outline-secondary">
+        Clear All
+      </button>
+    </div>
+
+  </div>
+  }
+</div>

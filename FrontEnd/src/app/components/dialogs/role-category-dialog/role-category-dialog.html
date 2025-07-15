@@ -1,0 +1,93 @@
+<div class="p-4">
+    <h5 class="mb-3">{{ isEditMode ? 'Edit Role-Category Acces' : 'Add Role-Category Access' }}</h5>
+    <form (ngSubmit)="onFormSubmit()" #roleCategoryForm="ngForm">
+        <div class="row g-3 ">
+
+            <div class="col-md-6">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Role Name</mat-label>
+                    @if (isEditMode) {
+                    <mat-select [(ngModel)]="formModel.roleName" name="roleName" disabled >
+                        @for (role of roles; track $index) {
+                        <mat-option [value]="role.roleName">{{ role.roleName
+                            }}</mat-option>
+                        }
+                    </mat-select>
+                    }
+                    @else {
+
+                    <mat-select [(ngModel)]="formModel.roleName" name="roleName" required>
+                        @for (role of roles; track $index) {
+                        <mat-option [value]="role.roleName">{{ role.roleName
+                            }}</mat-option>
+                        }
+                    </mat-select>
+                    }
+                    @if (roleCategoryForm.submitted && !formModel.roleName) {
+                    <mat-error>Role name is required</mat-error>
+                    }
+
+                </mat-form-field>
+            </div>
+
+            <div class="col-md-6">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Category Name</mat-label>
+                    @if (isEditMode) {
+                    <mat-select [(ngModel)]="formModel.categoryName" name="categoryName" required disabled>
+                        @for (category of categories; track $index) {
+                        <mat-option [value]="category.categoryName">{{
+                            category.categoryName
+                            }}</mat-option>
+                        }
+                    </mat-select>
+                    }
+                    @else {
+
+                    <mat-select [(ngModel)]="formModel.categoryName" name="categoryName" required>
+                        @for (category of categories; track $index) {
+                        <mat-option [value]="category.categoryName">{{
+                            category.categoryName
+                            }}</mat-option>
+                        }
+                    </mat-select>
+                    }
+                    @if (roleCategoryForm.submitted && !formModel.categoryName) {
+                    <mat-error>Category name is
+                        required</mat-error>
+                    }
+
+                </mat-form-field>
+            </div>
+
+
+            <div class="d-flex align-items-center justify-content-center g-3">
+                @if (formModel.roleName == "Viewer") {
+                    <mat-slide-toggle [(ngModel)]="formModel.canUpload" name="canUpload" disabled>
+                    Can Upload?
+                </mat-slide-toggle>
+                }
+                @else {
+                    <mat-slide-toggle [(ngModel)]="formModel.canUpload" name="canUpload">
+                        Can Upload?
+                    </mat-slide-toggle>
+                }
+                <mat-slide-toggle [(ngModel)]="formModel.canDownload" name="canDownload">
+                    Can Download?
+                </mat-slide-toggle>
+            </div>
+
+
+            <div class="d-flex align-items-end gap-2">
+                <button mat-flat-button color="primary" type="submit" [disabled]="roleCategoryForm.invalid"
+                    class="w-100 btn btn-primary">
+                    {{ isEditMode ? 'Update' : 'Add' }}
+                </button>
+                <button mat-stroked-button color="warn" type="button" (click)="cancelForm()"
+                    class="w-100 btn btn-outline-danger">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </form>
+</div>

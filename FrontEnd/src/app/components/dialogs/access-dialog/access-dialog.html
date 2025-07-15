@@ -1,0 +1,28 @@
+<div class="p-4">
+    <h5 class="mb-3">Add Access Level</h5>
+    <form (ngSubmit)="onFormSubmit()" [formGroup]="accessForm">
+
+
+        <mat-form-field appearance="outline" class="form-field w-100">
+            <mat-label>Access</mat-label>
+            <input matInput name="access" placeholder="e.g. write"
+                formControlName="access" autocomplete="off" />
+            @if (access.touched && access.errors) {
+
+            <mat-error>Access is required of atleast 3 characters</mat-error>
+            }
+        </mat-form-field>
+
+
+        <div class="d-flex align-items-end gap-2">
+            <button mat-flat-button color="primary" type="submit" [disabled]="accessForm.invalid"
+                class="w-100 btn btn-primary">
+                Add
+            </button>
+            <button mat-stroked-button color="warn" type="button" (click)="cancelForm()"
+                class="w-100 btn btn-outline-danger">
+                Cancel
+            </button>
+        </div>
+    </form>
+</div>

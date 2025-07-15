@@ -1,0 +1,154 @@
+<div class="user-files-container">
+    <div class="page-container">
+
+        <div class="page-header">
+            <div class="header-content">
+                <div class="header-text">
+                    <h1 class="page-title">
+                        <mat-icon class="title-icon">folder_shared</mat-icon>
+                        My Files
+                    </h1>
+                    <p class="page-subtitle">Manage and download your uploaded files</p>
+                </div>
+                <div class="header-stats">
+                    <div class="stat-card">
+                        <mat-icon class="stat-icon">description</mat-icon>
+                        <div class="stat-info">
+                            <span class="stat-number">{{ myFileArchives.length }}</span>
+                            <span class="stat-label">My Files</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="profile-section">
+            <mat-card class="profile-card">
+                <mat-card-content>
+                    <div class="profile-content">
+                        <div class="avatar-section">
+                            <div class="avatar-circle">
+                                <span class="avatar-initials">
+                                    {{ (currEmployee.firstName?.charAt(0) || '') + (currEmployee.lastName?.charAt(0) ||
+                                    '') }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="profile-info">
+                            <h3 class="profile-name">{{ currEmployee.firstName }} {{ currEmployee.lastName }}</h3>
+                            <p class="profile-email">{{ currEmployee.email }}</p>
+                            <div class="profile-badges">
+                                <span class="badge badge-primary">
+                                    <mat-icon>person</mat-icon>
+                                    Employee
+                                </span>
+                                <span class="badge badge-success">
+                                    <mat-icon>check_circle</mat-icon>
+                                    Active
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </mat-card-content>
+            </mat-card>
+        </div>
+
+
+        <div class="files-section">
+            <mat-card class="files-card">
+                <mat-card-header class="files-header">
+                    <div class="header-left">
+                        <mat-icon mat-card-avatar class="section-avatar">folder_open</mat-icon>
+                        <div class="header-text">
+                            <mat-card-title>My Uploaded Files</mat-card-title>
+                            <mat-card-subtitle>Files you have uploaded to the system</mat-card-subtitle>
+                        </div>
+                    </div>
+
+                </mat-card-header>
+
+                <mat-card-content class="files-content">
+                    @if (myFileArchives.length > 0) {
+                    <div class="files-grid">
+                        @for (file of myFileArchives; track file.id) {
+                        <div class="file-item-card">
+                            <div class="file-header">
+                                <div class="file-icon-wrapper">
+                                    <mat-icon class="file-icon">folder</mat-icon>
+                                </div>
+                            </div>
+
+                            <div class="file-content">
+                                <h4 class="file-name">{{ file.fileName }}</h4>
+                                <div class="file-meta">
+                                    <div class="meta-item">
+                                        <mat-icon class="meta-icon">category</mat-icon>
+                                        <span class="meta-text">{{ file.categoryName }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="file-status">
+                                    <div class="status-indicator status-active">
+                                        <mat-icon class="status-icon">check_circle</mat-icon>
+                                        <span class="status-text">Active</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="file-footer">
+                                <button mat-raised-button color="primary" (click)="downloadFile(file.fileName)"
+                                    class="download-button btn btn-outline-primary">
+                                    <mat-icon>download</mat-icon>
+                                    Download
+                                </button>
+                                <button mat-button (click)="getFileVersionsForArchive(file.id)"
+                                    class="versions-button btn btn-warning">
+                                    <mat-icon>history</mat-icon>
+                                    Versions
+                                </button>
+                                @if (file.canSummarise) {
+                                <button mat-button (click)="getFileSummary(file)"
+                                    class="summary-button btn btn-success">
+                                    <mat-icon>summarize</mat-icon>
+                                    Summary
+                                </button>
+                                }
+                            </div>
+                        </div>
+                        }
+                    </div>
+                    } @else if(myFileArchives.length === 0){
+                    <div class="empty-state">
+                        <div class="empty-content">
+                            <mat-icon class="empty-icon">folder_open</mat-icon>
+                            <h3 class="empty-title">No Files Found</h3>
+                            <p class="empty-description">You haven't uploaded any files yet. Start by uploading your
+                                first file.</p>
+                            <button mat-raised-button class="empty-action btn btn-primary" (click)="navigate()">
+                                <mat-icon>cloud_upload</mat-icon>
+                                Upload Files
+                            </button>
+                        </div>
+                    </div>
+                    }
+                </mat-card-content>
+            </mat-card>
+        </div>
+
+        @if (loading) {
+        <div class="loading-overlay">
+            <div class="loading-content">
+                <video autoplay loop muted playsinline class="loading-animation">
+                    <source src="/animations/summary-loader.webm" type="video/webm" />
+
+                    Your browser does not support the video tag.
+                </video>
+
+                <p>Chill, While we generate the summary for you..</p>
+            </div>
+        </div>
+        }
+
+    </div>
+</div>

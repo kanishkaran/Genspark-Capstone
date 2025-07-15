@@ -1,0 +1,39 @@
+<div class="versions-section">
+    <mat-card class="versions-card">
+        <mat-card-header class="version-card-header">
+            <div class="header-icon">
+                <mat-icon mat-card-avatar class="versions-avatar">layers</mat-icon>
+                <mat-card-title>File Versions</mat-card-title>
+            </div>
+            <button class="btn btn-outline-danger" (click)="close()">close</button>
+        </mat-card-header>
+
+        <mat-card-content>
+            <div class="versions-list">
+                @for (version of fileVersions; track version.id) {
+                <div class="version-item">
+                    <div class="version-info">
+                        <div class="version-header">
+                            <span class="version-badge">v{{ version.versionNumber }}</span>
+                            <span class="version-date">{{ version.createdAt | date:'medium' }}</span>
+                        </div>
+                        <div class="version-details">
+                            <div class="detail-item">
+                                <mat-icon class="detail-icon">person</mat-icon>
+                                <span class="detail-text">{{ version.createdBy }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="version-actions">
+                        <button mat-raised-button (click)="downloadFileVersion(version)"
+                            class=" version-download-button btn btn-outline-dark">
+                            <mat-icon>download</mat-icon>
+                            Download v{{ version.versionNumber }}
+                        </button>
+                    </div>
+                </div>
+                }
+            </div>
+        </mat-card-content>
+    </mat-card>
+</div>

@@ -1,0 +1,49 @@
+<div class="p-3">
+  <h5 class="mb-3">{{ isEditMode ? 'Edit Role' : 'Add Role' }}</h5>
+
+  <form (ngSubmit)="onFormSubmit()" #roleForm="ngForm">
+    <div class="row g-3">
+     
+      <div class="col-md-6">
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Role Name</mat-label>
+          @if (isEditMode) {
+            <input matInput [(ngModel)]="formModel.roleName" name="roleName" required autocomplete="off"
+            placeholder="Enter role name" disabled/>
+          }
+          @else {
+              <input matInput [(ngModel)]="formModel.roleName" name="roleName" required autocomplete="off" minlength="4"
+                placeholder="Enter role name" />
+          }
+          @if (roleForm.submitted && !formModel.roleName) {
+            <mat-error class="text-danger">Name is required of 4 characters</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+  
+      <div class="col-md-6">
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Access Level</mat-label>
+          <mat-select [(ngModel)]="formModel.accessLevel" name="accessLevel" required>
+            @for (access of accessLevels; track $index) {
+              <mat-option [value]="access.access">{{ access.access }}</mat-option>
+            }
+          </mat-select>
+          @if (roleForm.submitted && !formModel.accessLevel) {
+            <mat-error class="text-danger">Access Level is required</mat-error>
+          }
+        </mat-form-field>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-center gap-2 mt-4">
+      <button mat-flat-button color="primary" type="submit" class="btn btn-primary w-100">
+        {{ isEditMode ? 'Update' : 'Add' }}
+      </button>
+      <button mat-stroked-button color="warn" type="button" (click)="cancelForm()" class="btn btn-outline-danger w-100">
+        Cancel
+      </button>
+    </div>
+  </form>
+</div>

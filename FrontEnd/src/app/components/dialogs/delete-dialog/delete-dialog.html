@@ -1,0 +1,11 @@
+<div class="container p-3 ">
+    <h2 mat-dialog-title>Delete file</h2>
+    <mat-dialog-content class="">
+        Are you sure you want to delete {{element}} ?
+    </mat-dialog-content>
+    <mat-dialog-actions class=" ">
+        <button matButton mat-dialog-close class="btn btn-outline-primary w-50 " (click)="cancelDelete()">No</button>
+        <button matButton mat-dialog-close class="btn btn-outline-danger w-50 " (click)="deleteElement()">Yes</button>
+    </mat-dialog-actions>
+
+</div>
